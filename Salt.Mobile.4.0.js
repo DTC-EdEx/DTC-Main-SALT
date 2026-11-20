@@ -1047,10 +1047,7 @@ function setupTermReveals() {
         button.type = "button";
         button.className = "salt-blank";
         button.setAttribute("aria-expanded", "false");
-        button.setAttribute(
-            "aria-label",
-            "Reveal key term " + (index + 1)
-        );
+        // No aria-label: it would hide the revealed answer from screen readers.
 
         const blank = document.createElement("span");
         blank.className = "salt-blank-text";
@@ -1075,6 +1072,7 @@ function setupTermReveals() {
 
             blank.hidden = !revealed;
             answerSpan.hidden = revealed;
+            if (!revealed && window.SALTAnnounce) window.SALTAnnounce("Term: " + answer);
         });
 
         placeholder.dataset.saltReady = "true";
@@ -2241,6 +2239,7 @@ if (choice.getAttribute("aria-pressed") === "true") {
         inline.className = 'salt-choice-inline-feedback';
         inline.textContent = activeFeedback.textContent.trim();
         choice.appendChild(inline);
+        if (window.SALTAnnounce) window.SALTAnnounce(inline.textContent);
         activeFeedback.hidden = true;
         activeFeedback.classList.remove('salt-feedback-visible');
     }
@@ -4007,11 +4006,14 @@ function startSALT() {
       var score = node('div', 'salt-id-score');
       var scoreValue = node('strong', '', '0 answered');
       score.append(node('span', '', 'First-attempt score'), scoreValue); top.append(progress, score);
-      var heading = node('h3', 'salt-id-question', 'Which item is pictured?'); heading.tabIndex = -1;
+      var questionText = (host.dataset.question || 'Which item is pictured?').trim();
+      var heading = node('h3', 'salt-id-question', questionText); heading.tabIndex = -1;
+      // Scenario text stays outside the image button so screen readers can read it.
+      var scenarioBox = node('div', 'salt-id-scenario-box'); scenarioBox.hidden = true;
       var visualArea = button('', 'salt-id-picture');
       visualArea.setAttribute('aria-label', 'Enlarge current image');
       var enlarge = button('Enlarge image', 'salt-id-enlarge');
-      var choices = node('div', 'salt-id-choices'); choices.setAttribute('role', 'group'); choices.setAttribute('aria-label', 'Choose the name of the pictured item');
+      var choices = node('div', 'salt-id-choices'); choices.setAttribute('role', 'group'); choices.setAttribute('aria-label', host.dataset.choicesLabel || 'Choose the name of the pictured item');
       var feedback = node('div', 'salt-id-feedback'); feedback.setAttribute('role', 'status'); feedback.setAttribute('aria-atomic', 'true');
       var actions = node('div', 'salt-id-actions');
       var next = button('Next item', 'salt-id-next'); next.disabled = true;
@@ -4020,7 +4022,7 @@ function startSALT() {
       var restart = button('Start Over', 'salt-id-next salt-id-restart');
       actions.append(restart, next, review, again);
       restart.addEventListener('click', function () { start(items, 'full', true); });
-      panel.append(top, heading, visualArea, enlarge, choices, feedback, actions);
+      panel.append(top, heading, scenarioBox, visualArea, enlarge, choices, feedback, actions);
       var dialog = node('dialog', 'salt-id-dialog'); dialog.setAttribute('aria-label', 'Enlarged practice image');
       var close = button('Close', 'salt-id-close');
       var largeVisual = node('div', 'salt-id-large'); dialog.append(close, largeVisual);
@@ -4028,6 +4030,12 @@ function startSALT() {
       var round, mode;
       function showGameImage(item) {
     var visual = item.visual.cloneNode(true);
+
+    var scenarioText = visual.querySelectorAll('.salt-id-scenario');
+    scenarioBox.replaceChildren();
+    scenarioText.forEach(function (text) { scenarioBox.appendChild(text); });
+    scenarioBox.hidden = !scenarioText.length;
+    visualArea.classList.toggle('salt-id-has-scenario', scenarioText.length > 0);
 
     visual.querySelectorAll('.salt-lightbox').forEach(function (img) {
         img.classList.remove('salt-lightbox');
@@ -4110,7 +4118,7 @@ function startSALT() {
       function showItem(focus) {
         var s = round.snapshot(), item = round.current();
         progress.textContent = (mode === 'review' ? 'Missed-item practice · ' : '') + 'Item ' + (s.index + 1) + ' of ' + s.total;
-        heading.textContent = 'Which item is pictured?';
+        heading.textContent = questionText;
         showGameImage(item);
         enlarge.hidden = false; visualArea.hidden = false; choices.hidden = false;
         choices.replaceChildren(); feedback.replaceChildren();
@@ -4188,7 +4196,7 @@ measure.remove();
         if (!round.next()) return;
         var s = round.snapshot();
         if (s.index < s.total) { showItem(true); return; }
-        heading.textContent = 'Round complete';
+        heading.textContent = 'Round complete'; scenarioBox.hidden = true;
         progress.textContent = mode === 'review' ? 'Missed-item practice complete' : 'Practice complete';
         choices.hidden = true;
 enlarge.hidden = true;
@@ -4286,7 +4294,10 @@ visualArea.replaceChildren(completeMessage);
             if (!groups.has(parent)) groups.set(parent, []);
             groups.get(parent).push(card);
         });
-        groups.forEach(function (cards) {
+        groups.forEach(function (cards, parent) {
+            // data-caption-lines on the grid sets how many caption lines show before "Read more".
+            var lines = parseInt(parent && parent.dataset ? parent.dataset.captionLines : '', 10);
+            if (lines >= 2 && lines <= 20) parent.style.setProperty('--salt-card-caption-lines', String(lines));
             // Keep the existing component footprint: header, slim explainer,
             // image area and the original CSS minimum caption area.
             // Measure offscreen in the same styling context, without a text cap.
@@ -5025,7 +5036,7 @@ visualArea.replaceChildren(completeMessage);
     var box = {x:(p.left-b.left)*sx+1,y:(p.top-b.top)*sy+1,right:(p.right-b.left)*sx-1,bottom:(p.bottom-b.top)*sy-1};
     var tab = {x:(t.left-b.left)*sx+1,y:(t.top-b.top)*sy+1,bottom:(t.bottom-b.top)*sy-1};
     svg.setAttribute('viewBox','0 0 '+root.offsetWidth+' '+root.offsetHeight);
-    gradient.setAttribute('x1',box.x-28); gradient.setAttribute('x2',box.x+4);
+    gradient.setAttribute('x1',tab.x); gradient.setAttribute('x2',box.x+4);
     gradient.setAttribute('y1','0'); gradient.setAttribute('y2','0');
     /* Only join the bottom edges when they actually align. */
 var lastTabAtBottom =
@@ -5433,4 +5444,355 @@ path.setAttribute(
   }).observe(document.body,{childList:true,subtree:true});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+}());
+
+/* =========================================================
+   SALT 4.1 ENHANCEMENTS — 2026-11-20
+   Append once, after all other SALT JavaScript.
+   - Shared screen-reader announcements (window.SALTAnnounce)
+   - Horizontal tabs: ids, labels, Home/End keys
+   - Dialog focus trap
+   - Answer cards: hide the unseen face from screen readers
+   - Term-reveal tables: progress counter and Hide all
+   - Reveal groups: optional Open all / Close all
+   - Lab prep checklist (.salt-checklist), saved per browser
+   - Table filter (.salt-table-container[data-salt-filter])
+   ========================================================= */
+(function () {
+ 'use strict';
+ if (window.SALTEnhancements) return;
+ var serial = 0;
+ function uid(prefix) {
+  var id;
+  do { id = prefix + '-' + (++serial); } while (document.getElementById(id));
+  return id;
+ }
+ function el(tag, cls, text) {
+  var node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+ }
+ function btn(text, cls) { var b = el('button', cls, text); b.type = 'button'; return b; }
+ function editing(node) { return !!node.closest('[contenteditable="true"], .mce-content-body'); }
+
+ /* ---------- Shared live region ---------- */
+ var live;
+ function announce(message) {
+  if (!message) return;
+  if (!live || !live.isConnected) {
+   live = el('div', 'salt-sr-only salt-announcer');
+   live.setAttribute('role', 'status');
+   live.setAttribute('aria-live', 'polite');
+   live.setAttribute('aria-atomic', 'true');
+   document.body.appendChild(live);
+  }
+  live.textContent = '';
+  // A short delay lets screen readers notice repeated messages.
+  setTimeout(function () { live.textContent = message; }, 60);
+ }
+
+ /* ---------- Horizontal tabs ---------- */
+ function prepareTabs() {
+  document.querySelectorAll('.salt-page .salt-tabs').forEach(function (tabs) {
+   if (tabs.dataset.saltTabsA11y || editing(tabs)) return;
+   var list = tabs.querySelector('.salt-tab-buttons');
+   var buttons = tabs.querySelectorAll('.salt-tab-button');
+   var panels = tabs.querySelectorAll('.salt-tab-content');
+   if (!list || !buttons.length || buttons.length !== panels.length) return;
+   tabs.dataset.saltTabsA11y = 'true';
+   list.setAttribute('role', 'tablist');
+   if (!list.getAttribute('aria-label')) list.setAttribute('aria-label', tabs.dataset.label || 'Topics');
+   buttons.forEach(function (button, i) {
+    var panel = panels[i];
+    if (!panel.id) panel.id = uid('salt-tab-panel');
+    if (!button.id) button.id = uid('salt-tab');
+    button.setAttribute('aria-controls', panel.id);
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', button.id);
+    panel.tabIndex = 0;
+   });
+   list.addEventListener('keydown', function (event) {
+    if (event.key !== 'Home' && event.key !== 'End') return;
+    var all = Array.prototype.slice.call(tabs.querySelectorAll('.salt-tab-button'));
+    var target = all[event.key === 'Home' ? 0 : all.length - 1];
+    if (!target) return;
+    event.preventDefault();
+    target.click();
+    target.focus();
+   });
+  });
+ }
+
+ /* ---------- Dialog focus trap ---------- */
+ var focusable = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])';
+ document.addEventListener('keydown', function (event) {
+  if (event.key !== 'Tab') return;
+  var dialog = document.querySelector('.salt-dialog.open:not([hidden])');
+  if (!dialog) return;
+  var items = Array.prototype.filter.call(dialog.querySelectorAll(focusable), function (node) {
+   return node.offsetParent !== null || node === document.activeElement;
+  });
+  if (!items.length) return;
+  var first = items[0], last = items[items.length - 1];
+  if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+ }, true);
+
+ /* ---------- Answer cards: only the visible face is read ---------- */
+ function syncFlashcard(card) {
+  var flipped = card.classList.contains('flipped');
+  var front = card.querySelector('.salt-flashcard-front');
+  var back = card.querySelector('.salt-flashcard-back');
+  if (front) front.setAttribute('aria-hidden', String(flipped));
+  if (back) back.setAttribute('aria-hidden', String(!flipped));
+ }
+ var flashcardObserver = window.MutationObserver ? new MutationObserver(function (records) {
+  records.forEach(function (record) {
+   var card = record.target;
+   var was = (record.oldValue || '').split(/\s+/).indexOf('flipped') !== -1;
+   var now = card.classList.contains('flipped');
+   if (was === now) return;
+   syncFlashcard(card);
+   if (now) {
+    var back = card.querySelector('.salt-flashcard-back');
+    if (back) announce(back.textContent.replace(/\s+/g, ' ').trim());
+   }
+  });
+ }) : null;
+ function prepareFlashcards() {
+  document.querySelectorAll('.salt-page .salt-flashcard').forEach(function (card) {
+   if (card.dataset.saltFaceSync) return;
+   card.dataset.saltFaceSync = 'true';
+   syncFlashcard(card);
+   if (flashcardObserver) flashcardObserver.observe(card, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+  });
+ }
+
+ /* ---------- Term-reveal tables: counter + Hide all ---------- */
+ function prepareTermTables() {
+  document.querySelectorAll('.salt-page table[data-active-table]').forEach(function (table) {
+   if (table.dataset.saltTermTools || editing(table)) return;
+   var buttons = table.querySelectorAll('button.salt-blank');
+   if (!buttons.length) return;
+   table.dataset.saltTermTools = 'true';
+   var container = table.closest('.salt-table-container') || table;
+   var tools = el('div', 'salt-term-tools');
+   var status = el('p', 'salt-term-status');
+   var hide = btn('Hide all', 'salt-term-hide');
+   var show = btn('Reveal all', 'salt-term-show');
+   tools.append(status, show, hide);
+   container.after(tools);
+   function current() { return table.querySelectorAll('button.salt-blank'); }
+   function count() {
+    var all = current(), open = 0;
+    all.forEach(function (b) { if (b.getAttribute('aria-expanded') === 'true') open++; });
+    status.textContent = open + ' of ' + all.length + ' terms revealed';
+    tools.classList.toggle('salt-term-complete', open === all.length);
+    hide.disabled = open === 0;
+    show.disabled = open === all.length;
+    return open;
+   }
+   function setAll(open) {
+    current().forEach(function (b) { if ((b.getAttribute('aria-expanded') === 'true') !== open) b.click(); });
+    count();
+    announce(open ? 'All terms revealed.' : 'All terms hidden. Try recalling each term again.');
+   }
+   table.addEventListener('click', function (event) {
+    if (!(event.target instanceof Element) || !event.target.closest('button.salt-blank')) return;
+    setTimeout(count, 0);
+   });
+   hide.addEventListener('click', function () { setAll(false); });
+   show.addEventListener('click', function () { setAll(true); });
+   count();
+  });
+ }
+
+ /* ---------- Reveal groups: Open all / Close all (opt-in) ---------- */
+ function prepareRevealGroups() {
+  document.querySelectorAll('.salt-page .salt-reveal-group[data-salt-expand-all]').forEach(function (group) {
+   if (group.dataset.saltExpandReady || editing(group)) return;
+   var reveals = group.querySelectorAll(':scope > .salt-reveal');
+   if (reveals.length < 2 || !group.querySelector('button.salt-reveal-button')) return;
+   group.dataset.saltExpandReady = 'true';
+   var bar = el('div', 'salt-reveal-group-tools');
+   var toggle = btn('Open all', 'salt-reveal-toggle-all');
+   toggle.setAttribute('aria-expanded', 'false');
+   bar.appendChild(toggle);
+   group.before(bar);
+   function allOpen() {
+    return Array.prototype.every.call(group.querySelectorAll(':scope > .salt-reveal'), function (r) { return r.classList.contains('open'); });
+   }
+   function refresh() {
+    var open = allOpen();
+    toggle.textContent = open ? 'Close all' : 'Open all';
+    toggle.setAttribute('aria-expanded', String(open));
+   }
+   toggle.addEventListener('click', function () {
+    var open = !allOpen();
+    group.querySelectorAll(':scope > .salt-reveal').forEach(function (reveal) {
+     if (reveal.classList.contains('open') !== open) {
+      var b = reveal.querySelector('.salt-reveal-button');
+      if (b) b.click();
+     }
+    });
+    refresh();
+    announce(open ? 'All sections opened.' : 'All sections closed.');
+   });
+   group.addEventListener('click', function () { setTimeout(refresh, 0); });
+   refresh();
+  });
+ }
+
+ /* ---------- Lab prep checklist ---------- */
+ function storageKey(index) {
+  return 'salt-checklist:' + location.pathname + ':' + index;
+ }
+ function readState(key) {
+  try { return JSON.parse(window.localStorage.getItem(key) || '[]'); } catch (e) { return []; }
+ }
+ function writeState(key, value) {
+  try { window.localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* Storage blocked. */ }
+ }
+ function prepareChecklists() {
+  document.querySelectorAll('.salt-page .salt-checklist').forEach(function (list, listIndex) {
+   if (list.dataset.saltChecklistReady || editing(list)) return;
+   var source = list.querySelector('ul, ol');
+   if (!source) return;
+   var items = Array.prototype.filter.call(source.children, function (li) { return li.tagName === 'LI'; });
+   if (!items.length) return;
+   list.dataset.saltChecklistReady = 'true';
+   var key = storageKey(list.id || listIndex);
+   var saved = readState(key);
+   var id = uid('salt-checklist');
+   var title = el('p', 'salt-checklist-title', list.dataset.title || 'Checklist');
+   title.id = id + '-title';
+   var meter = el('div', 'salt-checklist-meter');
+   meter.setAttribute('aria-hidden', 'true');
+   var fill = el('span', 'salt-checklist-fill');
+   meter.appendChild(fill);
+   var status = el('p', 'salt-checklist-status');
+   var group = el('ul', 'salt-checklist-items');
+   group.setAttribute('aria-labelledby', title.id);
+   var boxes = items.map(function (li, i) {
+    var row = el('li', 'salt-checklist-item');
+    var box = document.createElement('input');
+    box.type = 'checkbox';
+    box.id = id + '-item-' + i;
+    box.checked = saved.indexOf(i) !== -1;
+    var label = document.createElement('label');
+    label.htmlFor = box.id;
+    while (li.firstChild) label.appendChild(li.firstChild);
+    row.append(box, label);
+    row.classList.toggle('is-checked', box.checked);
+    group.appendChild(row);
+    return box;
+   });
+   var done = list.querySelector('.salt-checklist-complete');
+   if (!done) done = el('p', 'salt-checklist-complete', 'All set! You are ready.');
+   var reset = btn('Clear checklist', 'salt-checklist-reset');
+   var footer = el('div', 'salt-checklist-footer');
+   footer.append(status, reset);
+   source.replaceWith(group);
+   list.prepend(title, meter);
+   list.append(footer, done);
+   function update(speak) {
+    var checked = [];
+    boxes.forEach(function (box, i) {
+     if (box.checked) checked.push(i);
+     box.closest('.salt-checklist-item').classList.toggle('is-checked', box.checked);
+    });
+    var complete = checked.length === boxes.length;
+    fill.style.width = (checked.length / boxes.length * 100) + '%';
+    status.textContent = checked.length + ' of ' + boxes.length + ' complete';
+    done.hidden = !complete;
+    list.classList.toggle('salt-checklist-done', complete);
+    reset.disabled = !checked.length;
+    writeState(key, checked);
+    if (speak) announce(status.textContent + (complete ? '. ' + done.textContent : ''));
+   }
+   boxes.forEach(function (box) { box.addEventListener('change', function () { update(true); }); });
+   reset.addEventListener('click', function () {
+    boxes.forEach(function (box) { box.checked = false; });
+    update(true);
+    boxes[0].focus();
+   });
+   update(false);
+  });
+ }
+
+ /* ---------- Table filter ---------- */
+ function prepareFilters() {
+  document.querySelectorAll('.salt-page .salt-table-container[data-salt-filter]').forEach(function (container) {
+   if (container.dataset.saltFilterReady || editing(container)) return;
+   var table = container.querySelector('table');
+   if (!table || !table.tBodies.length) return;
+   container.dataset.saltFilterReady = 'true';
+   var rows = Array.prototype.slice.call(table.tBodies[0].rows);
+   var id = uid('salt-filter');
+   var wrap = el('div', 'salt-filter');
+   var label = el('label', 'salt-filter-label', container.dataset.saltFilter || 'Filter table');
+   label.htmlFor = id;
+   var input = document.createElement('input');
+   input.type = 'search';
+   input.id = id;
+   input.className = 'salt-filter-input';
+   input.autocomplete = 'off';
+   input.setAttribute('aria-describedby', id + '-status');
+   var status = el('p', 'salt-filter-status');
+   status.id = id + '-status';
+   wrap.append(label, input, status);
+   container.before(wrap);
+   var empty = el('p', 'salt-filter-empty', 'No rows match. Try a different word.');
+   empty.hidden = true;
+   container.after(empty);
+   var timer = null;
+   function apply(speak) {
+    var words = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    var shown = 0;
+    rows.forEach(function (row) {
+     var text = row.textContent.toLowerCase();
+     var match = words.every(function (w) { return text.indexOf(w) !== -1; });
+     row.hidden = !match;
+     if (match) shown++;
+    });
+    status.textContent = words.length ? shown + ' of ' + rows.length + ' rows shown' : rows.length + ' rows';
+    empty.hidden = shown !== 0;
+    if (speak) {
+     clearTimeout(timer);
+     timer = setTimeout(function () { announce(status.textContent); }, 500);
+    }
+   }
+   input.addEventListener('input', function () { apply(true); });
+   apply(false);
+  });
+ }
+
+ /* ---------- Start ---------- */
+ function initialize() {
+  if (!document.querySelector('.salt-page')) return;
+  prepareTabs();
+  prepareFlashcards();
+  prepareTermTables();
+  prepareRevealGroups();
+  prepareChecklists();
+  prepareFilters();
+ }
+ window.SALTAnnounce = announce;
+ window.SALTEnhancements = { initialize: initialize, announce: announce, version: '4.1' };
+ function start() {
+  initialize();
+  // Other SALT modules rebuild controls after load; check again briefly.
+  setTimeout(initialize, 400);
+  setTimeout(initialize, 1500);
+  var queued = false;
+  new MutationObserver(function (records) {
+   if (queued || !records.some(function (r) { return r.addedNodes.length > 0; })) return;
+   queued = true;
+   setTimeout(function () { queued = false; initialize(); }, 120);
+  }).observe(document.body, { childList: true, subtree: true });
+ }
+ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+ else start();
 }());
