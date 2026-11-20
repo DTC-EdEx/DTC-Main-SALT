@@ -112,7 +112,6 @@
    SALT SCROLL REVEAL
    ========================================================= */
 
-
     /* =====================================================
        PROGRESS BAR
        ===================================================== */
@@ -468,7 +467,6 @@
 
         card.setAttribute("aria-pressed", flipped ? "true" : "false");
     }
-
 
     function setupTermReveals() {
         document
@@ -1462,7 +1460,6 @@
    CANVAS-SAFE RECONSTRUCTION
    ===================================================== */
 
-
     function setupDesktopNavigation() {
         var navigation = document.querySelector(".salt-mobile-navigation");
 
@@ -1735,11 +1732,9 @@
 
         setupFlipCards();
 
-
         setupTermReveals();
 
         window.SALTFrameworkState.controlsRebuilt = true;
-
     }
 
     /* =========================================================
@@ -1928,7 +1923,6 @@
         setupImageLightbox();
 
         window.SALTFrameworkState.initialized = true;
-
 
         return true;
     }
@@ -4770,6 +4764,125 @@
                 initialize();
             }, 120);
         }).observe(document.body, { childList: true, subtree: true });
+    }
+    if (document.readyState === "loading")
+        document.addEventListener("DOMContentLoaded", start, { once: true });
+    else start();
+})();
+
+/* NAME THAT PART (.salt-parts) — numbered image with flip cards */
+(function () {
+    "use strict";
+    if (window.SALTNumberedParts) return;
+
+    function element(tag, className, text) {
+        var node = document.createElement(tag);
+        node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+    }
+
+    function setCard(button, revealed) {
+        button.setAttribute("aria-pressed", String(revealed));
+        button.setAttribute(
+            "aria-label",
+            revealed
+                ? "Part " + button._saltNumber + ": " + button._saltTerm + ". Hide term"
+                : "Part " + button._saltNumber + ". Reveal term"
+        );
+    }
+
+    function updateStatus(activity, reset) {
+        var buttons = activity.querySelectorAll(".salt-part-toggle");
+        var count = activity.querySelectorAll('.salt-part-toggle[aria-pressed="true"]').length;
+        activity.querySelector(".salt-parts-status").textContent =
+            (reset ? "Cards reset. " : "") + count + " of " + buttons.length + " terms revealed.";
+    }
+
+    function initialize() {
+        document.querySelectorAll(".salt-parts").forEach(function (activity) {
+            if (!activity.querySelector(".salt-parts-grid")) return;
+            activity.querySelectorAll(".salt-part-card").forEach(function (card) {
+                if (card.querySelector(".salt-part-toggle")) return;
+                var numberNode = card.querySelector(".salt-part-number");
+                var termNode = card.querySelector(".salt-part-term");
+                if (!numberNode || !termNode) return;
+                var number = numberNode.textContent.trim();
+                var term = termNode.textContent.trim();
+                if (!number || !term) return;
+                var button = element("button", "salt-part-toggle");
+                button.type = "button";
+                button._saltNumber = number;
+                button._saltTerm = term;
+                var inner = element("span", "salt-part-inner");
+                inner.setAttribute("aria-hidden", "true");
+                var front = element("span", "salt-part-face salt-part-front");
+                front.appendChild(element("strong", "", number));
+                front.appendChild(element("small", "", "Reveal term"));
+                var back = element("span", "salt-part-face salt-part-back");
+                back.appendChild(element("small", "", "Part " + number));
+                back.appendChild(element("strong", "", term));
+                inner.appendChild(front);
+                inner.appendChild(back);
+                button.appendChild(inner);
+                setCard(button, false);
+                card.replaceChildren(button);
+                card.classList.add("salt-part-ready");
+            });
+            var reset = activity.querySelector(".salt-parts-reset");
+            if (reset && reset.tagName !== "BUTTON") {
+                var resetButton = element(
+                    "button",
+                    "salt-parts-reset",
+                    reset.textContent.trim() || "Reset cards"
+                );
+                resetButton.type = "button";
+                reset.replaceWith(resetButton);
+            }
+            if (!activity.querySelector(".salt-parts-status")) {
+                var status = element("p", "salt-parts-status");
+                status.setAttribute("role", "status");
+                status.setAttribute("aria-live", "polite");
+                status.setAttribute("aria-atomic", "true");
+                activity.querySelector(".salt-parts-grid").after(status);
+                updateStatus(activity, false);
+            }
+        });
+    }
+
+    document.addEventListener("click", function (event) {
+        if (!(event.target instanceof Element)) return;
+        var button = event.target.closest(".salt-part-toggle, .salt-parts-reset");
+        if (!button) return;
+        var activity = button.closest(".salt-parts");
+        if (!activity) return;
+        if (button.classList.contains("salt-parts-reset")) {
+            activity.querySelectorAll(".salt-part-toggle").forEach(function (card) {
+                setCard(card, false);
+            });
+            updateStatus(activity, true);
+        } else {
+            setCard(button, button.getAttribute("aria-pressed") !== "true");
+            updateStatus(activity, false);
+        }
+    });
+
+    window.SALTNumberedParts = { initialize: initialize };
+    function start() {
+        initialize();
+        var observer = new MutationObserver(function (records) {
+            var relevant = records.some(function (record) {
+                return Array.from(record.addedNodes).some(function (node) {
+                    return (
+                        node.nodeType === 1 &&
+                        (node.matches(".salt-parts, .salt-part-card") ||
+                            node.querySelector(".salt-parts, .salt-part-card"))
+                    );
+                });
+            });
+            if (relevant) initialize();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
     if (document.readyState === "loading")
         document.addEventListener("DOMContentLoaded", start, { once: true });
