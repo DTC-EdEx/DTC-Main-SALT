@@ -11,6 +11,8 @@
  *
  * Accessibility: every text/background pair SALT uses is checked against
  * WCAG 2.2 AA (4.5:1 for text, 3:1 for focus rings and control borders).
+ *
+ * Optional style choices (tab and card looks) are listed in STYLES below.
  * When a color a program asked for would fail, the script darkens it just
  * enough to pass, uses the adjusted color, and says so in the report.
  */
@@ -254,6 +256,95 @@ function block(selector, result, inputs) {
     return lines.join("\n");
 }
 
+/* ---------- optional style choices ----------
+ * A program can add "style": { "tabs": "folder", "cards": "outlined" } to its
+ * entry in program-colors.json. Each choice adds the rules below for that
+ * program only. "P" stands for the program's page, wherever its class is.
+ */
+var STYLES = {
+    tabs: {
+        // Unselected tabs are filled with the pale color and the selected tab is
+        // white, joined to its panel. White and pale are too close to tell
+        // apart (about 1.2:1), so the selected tab also gets a primary-color bar
+        // and bold text: the selection never depends on fill color alone.
+        folder: [
+            "P .salt-tab-buttons {",
+            "    gap: 4px !important;",
+            "    border-bottom: 1px solid var(--salt-light) !important;",
+            "}",
+            "P .salt-tab-button {",
+            "    margin-bottom: -1px !important;",
+            "    border: 1px solid var(--salt-light) !important;",
+            "    border-radius: 8px 8px 0 0 !important;",
+            "    background: var(--salt-pale) !important;",
+            "    color: var(--salt-text) !important;",
+            "    box-shadow: inset 0 3px 0 transparent !important;",
+            "}",
+            "P .salt-tab-button:hover {",
+            "    background: var(--salt-white) !important;",
+            "    color: var(--salt-primary) !important;",
+            "}",
+            'P .salt-tab-button.active,',
+            'P .salt-tab-button[aria-selected="true"] {',
+            "    border-color: var(--salt-light) !important;",
+            "    border-bottom-color: var(--salt-white) !important;",
+            "    background: var(--salt-white) !important;",
+            "    color: var(--salt-primary) !important;",
+            "    font-weight: 800 !important;",
+            "    box-shadow: inset 0 4px 0 var(--salt-primary) !important;",
+            "}",
+            "P .salt-tab-content {",
+            "    border-color: var(--salt-light) !important;",
+            "}",
+            'P .salt-vtabs .salt-vtab:not([aria-selected="true"]) {',
+            "    border-color: var(--salt-light) !important;",
+            "    background: var(--salt-pale) !important;",
+            "    color: var(--salt-text) !important;",
+            "    box-shadow: none !important;",
+            "}",
+            'P .salt-vtabs .salt-vtab:not([aria-selected="true"]):hover {',
+            "    background: var(--salt-white) !important;",
+            "    color: var(--salt-primary) !important;",
+            "}"
+        ]
+    },
+    cards: {
+        // White cards with a primary-color outline.
+        outlined: [
+            "P :is(.salt-objective, .salt-fact, .salt-comparison-card, .salt-image-card, .salt-scenario) {",
+            "    border: 1px solid var(--salt-primary) !important;",
+            "    background: var(--salt-white) !important;",
+            "}",
+            "P .salt-checklist {",
+            "    border-color: var(--salt-primary) !important;",
+            "}"
+        ]
+    }
+};
+
+function styleRules(key, style) {
+    var page = ":is(.salt-page.salt-program-" + key + ", .salt-program-" + key + " .salt-page)";
+    var lines = [];
+    Object.keys(style || {}).forEach(function (part) {
+        var rules = STYLES[part] && STYLES[part][style[part]];
+        if (!rules) {
+            throw new Error(
+                key + ': unknown style "' + part + '": "' + style[part] + '". Choices: ' +
+                    Object.keys(STYLES)
+                        .map(function (p) {
+                            return p + " = " + Object.keys(STYLES[p]).join(" / ");
+                        })
+                        .join("; ")
+            );
+        }
+        lines.push("/* " + key + ": " + part + " = " + style[part] + " */");
+        rules.forEach(function (line) {
+            lines.push(line.replace(/^P /, page + " "));
+        });
+    });
+    return lines.join("\n");
+}
+
 function render(config, results) {
     var out = [];
     out.push(
@@ -277,6 +368,10 @@ function render(config, results) {
     results.forEach(function (r) {
         out.push("");
         out.push(block(".salt-program-" + r.key, r, config.programs[r.key]));
+        if (config.programs[r.key].style) {
+            out.push("");
+            out.push(styleRules(r.key, config.programs[r.key].style));
+        }
     });
     out.push("");
     out.push(END);

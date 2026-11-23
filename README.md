@@ -62,15 +62,15 @@ You do not need to change the version number. It is only a cache-buster: GitHub 
 
 Each program has one **primary** color and six supporting colors. Every color in `salt.css` comes from these, so changing a program's look means changing only seven hex codes.
 
-| Color | What it is used for | Plumbing | HVACR |
-| --- | --- | --- | --- |
-| `primary` | Banner, headings, table headers, buttons, focus outlines | `#144992` | `#144931` |
-| `secondary` | Section labels, active tab and menu item, flip cards, accents | `#b32839` | none (uses primary) |
-| `light` | Light accent borders and highlights | `#c3d3e8` | `#c3d8ca` |
-| `pale` | Tinted panels and backgrounds | `#eaf1fb` | `#eaf3ed` |
-| `gray` | Card borders and dividers | `#dddddd` | `#e8e8e8` |
-| `white` | Page and card background, text on dark colors | `#ffffff` | `#ffffff` |
-| `text` | Body text | `#262626` | `#262626` |
+| Color | What it is used for | Plumbing | HVACR | Electrical |
+| --- | --- | --- | --- | --- |
+| `primary` | Banner, headings, table headers, buttons, focus outlines | `#144992` | `#144931` | `#484959` |
+| `secondary` | Section labels, active tab and menu item, flip cards, accents | `#b32839` | none (uses primary) | none (uses primary) |
+| `light` | Light accent borders and highlights | `#c3d3e8` | `#c3d8ca` | `#bcc2ce` |
+| `pale` | Tinted panels and backgrounds | `#eaf1fb` | `#eaf3ed` | `#e3e6ed` |
+| `gray` | Card borders and dividers | `#dddddd` | `#e8e8e8` | `#bcc2ce` |
+| `white` | Page and card background, text on dark colors | `#ffffff` | `#ffffff` | `#ffffff` |
+| `text` | Body text | `#262626` | `#262626` | `#262626` |
 
 Hover shades, darker and paler versions, and muted text are worked out from those seven automatically.
 
@@ -80,7 +80,14 @@ Hover shades, darker and paler versions, and muted text are worked out from thos
 <div class="salt-page salt-program-plumbing">
 ```
 
-Programs so far: `salt-program-plumbing`, `salt-program-hvac`. A program can skip the secondary color; its accents then use the primary color. `examples/salt-component-showcase-hvac.html` is the showcase page in HVACR colors.
+Programs so far: `salt-program-plumbing`, `salt-program-hvac`, `salt-program-electrical`. A program can skip the secondary color; its accents then use the primary color. `examples/salt-component-showcase-hvac.html` and `examples/salt-component-showcase-electrical.html` are the showcase page in those programs' colors.
+
+**Optional style choices.** A program can also pick a look for some components by adding `"style"` to its entry in `tools/program-colors.json`:
+
+- `"tabs": "folder"`: unselected tabs are filled with the pale color, and the selected tab is white and joins its panel. The selected tab also gets a primary-color bar and bold text, because white and pale alone are too close to tell apart.
+- `"cards": "outlined"`: objective, fact, comparison, image and knowledge-check cards are white with a primary-color outline.
+
+Electrical uses both: `"style": { "tabs": "folder", "cards": "outlined" }`.
 
 A page with no program class uses the default colors (currently Plumbing). Answer feedback (correct green, incorrect red) stays the same in every program.
 

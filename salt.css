@@ -111,6 +111,83 @@
     --salt-text-rgb: 38, 38, 38;
 }
 
+.salt-program-electrical {
+    /* Electrical: the seven program colors */
+    --salt-primary: #484959;
+    --salt-secondary: #484959;
+    --salt-light: #bcc2ce;
+    --salt-pale: #e3e6ed;
+    --salt-gray: #bcc2ce;
+    --salt-white: #ffffff;
+    --salt-text: #262626;
+    /* Worked out from the seven colors above */
+    --salt-primary-dark: #32333e;
+    --salt-primary-darker: #202128;
+    --salt-primary-bright: #737684;
+    --salt-primary-rgb: 72, 73, 89;
+    --salt-secondary-dark: #3a3a47;
+    --salt-secondary-darker: #282831;
+    --salt-secondary-light: #adadb4;
+    --salt-secondary-tint: #dadbde;
+    --salt-secondary-pale: #f0f0f2;
+    --salt-secondary-paler: #f8f8f8;
+    --salt-secondary-rgb: 72, 73, 89;
+    --salt-surface-soft: #f1f3f6;
+    --salt-gray-light: #dee1e7;
+    --salt-gray-mid: #8f939c;
+    --salt-gray-strong: #63666b;
+    --salt-text-muted: #5e5e5e;
+    --salt-text-rgb: 38, 38, 38;
+}
+
+/* electrical: tabs = folder */
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-tab-buttons {
+    gap: 4px !important;
+    border-bottom: 1px solid var(--salt-light) !important;
+}
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-tab-button {
+    margin-bottom: -1px !important;
+    border: 1px solid var(--salt-light) !important;
+    border-radius: 8px 8px 0 0 !important;
+    background: var(--salt-pale) !important;
+    color: var(--salt-text) !important;
+    box-shadow: inset 0 3px 0 transparent !important;
+}
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-tab-button:hover {
+    background: var(--salt-white) !important;
+    color: var(--salt-primary) !important;
+}
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-tab-button.active,
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-tab-button[aria-selected="true"] {
+    border-color: var(--salt-light) !important;
+    border-bottom-color: var(--salt-white) !important;
+    background: var(--salt-white) !important;
+    color: var(--salt-primary) !important;
+    font-weight: 800 !important;
+    box-shadow: inset 0 4px 0 var(--salt-primary) !important;
+}
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-tab-content {
+    border-color: var(--salt-light) !important;
+}
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-vtabs .salt-vtab:not([aria-selected="true"]) {
+    border-color: var(--salt-light) !important;
+    background: var(--salt-pale) !important;
+    color: var(--salt-text) !important;
+    box-shadow: none !important;
+}
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-vtabs .salt-vtab:not([aria-selected="true"]):hover {
+    background: var(--salt-white) !important;
+    color: var(--salt-primary) !important;
+}
+/* electrical: cards = outlined */
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) :is(.salt-objective, .salt-fact, .salt-comparison-card, .salt-image-card, .salt-scenario) {
+    border: 1px solid var(--salt-primary) !important;
+    background: var(--salt-white) !important;
+}
+:is(.salt-page.salt-program-electrical, .salt-program-electrical .salt-page) .salt-checklist {
+    border-color: var(--salt-primary) !important;
+}
+
 /* PROGRAM COLORS:END */
 
 /* Answer feedback colors stay the same in every program so "wrong" always looks
@@ -5421,7 +5498,7 @@ dialog.salt-card-dialog::backdrop {
     font-weight: 600;
     text-align: left;
     cursor: grab;
-    box-shadow: 0 2px 3px #003a6312;
+    box-shadow: 0 2px 3px rgba(var(--salt-primary-rgb), 0.07);
     transition:
         transform 0.15s,
         box-shadow 0.15s;
@@ -5431,11 +5508,11 @@ dialog.salt-card-dialog::backdrop {
     border-color: var(--salt-secondary);
     background: var(--salt-white);
     color: var(--salt-primary-dark);
-    box-shadow: 0 5px 10px #003a6322;
+    box-shadow: 0 5px 10px rgba(var(--salt-primary-rgb), 0.13);
 }
 .salt-page .salt-sort .salt-sort-term[aria-pressed="true"] {
     border-color: var(--salt-secondary);
-    box-shadow: 0 0 0 2px #b3283933;
+    box-shadow: 0 0 0 2px rgba(var(--salt-secondary-rgb), 0.20);
 }
 .salt-page .salt-sort-grip {
     display: grid;
@@ -5489,7 +5566,7 @@ dialog.salt-card-dialog::backdrop {
 }
 .salt-page .salt-sort-bin.salt-sort-target {
     border-color: var(--salt-secondary);
-    box-shadow: 0 0 0 3px #b3283933;
+    box-shadow: 0 0 0 3px rgba(var(--salt-secondary-rgb), 0.20);
 }
 .salt-page .salt-sort .salt-sort-term.salt-sort-wrong {
     border-color: var(--salt-error);
@@ -5581,7 +5658,7 @@ dialog.salt-card-dialog::backdrop {
 /* Action-button lift and borderless placement control states. */
 .salt-page .salt-sort .salt-sort-actions button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 10px #003a6326;
+    box-shadow: 0 5px 10px rgba(var(--salt-primary-rgb), 0.15);
 }
 .salt-page .salt-sort .salt-sort-place:hover,
 .salt-page .salt-sort .salt-sort-place:active {
@@ -5629,7 +5706,7 @@ dialog.salt-card-dialog::backdrop {
     text-align-last: center;
     cursor: pointer;
     appearance: auto;
-    box-shadow: 0 1px 2px #003a6312;
+    box-shadow: 0 1px 2px rgba(var(--salt-primary-rgb), 0.07);
     transition:
         transform 0.15s,
         box-shadow 0.15s,
@@ -5640,7 +5717,7 @@ dialog.salt-card-dialog::backdrop {
     background-color: var(--salt-surface-soft);
     color: var(--salt-primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px #003a6324;
+    box-shadow: 0 4px 8px rgba(var(--salt-primary-rgb), 0.14);
 }
 .salt-page .salt-sort select.salt-sort-place:focus-visible {
     border-color: var(--salt-primary);
@@ -5821,7 +5898,7 @@ dialog.salt-card-dialog::backdrop {
     cursor: pointer;
     white-space: normal;
     overflow-wrap: anywhere;
-    box-shadow: 0 2px 4px #003a6310;
+    box-shadow: 0 2px 4px rgba(var(--salt-primary-rgb), 0.06);
     transition:
         transform 0.15s,
         box-shadow 0.15s,
@@ -5832,7 +5909,7 @@ dialog.salt-card-dialog::backdrop {
     border-color: var(--salt-secondary);
     background: var(--salt-white);
     color: var(--salt-primary-dark);
-    box-shadow: 0 5px 10px #003a6322;
+    box-shadow: 0 5px 10px rgba(var(--salt-primary-rgb), 0.13);
 }
 .salt-page .salt-vtabs .salt-vtab[aria-selected="true"] {
     border-color: var(--salt-secondary);
@@ -6364,11 +6441,11 @@ dialog.salt-card-dialog::backdrop {
 @media (hover: hover) and (pointer: fine) {
     .salt-page .salt-carousel-slide img:hover {
         transform: translateY(-3px);
-        box-shadow: 0 6px 14px #003a6320;
+        box-shadow: 0 6px 14px rgba(var(--salt-primary-rgb), 0.13);
     }
     .salt-page .salt-carousel-dot:hover::before {
         border-color: var(--salt-secondary);
-        box-shadow: 0 0 0 5px #b3283918;
+        box-shadow: 0 0 0 5px rgba(var(--salt-secondary-rgb), 0.09);
     }
     .salt-page .salt-carousel-arrow:not([aria-disabled="true"]):hover {
         border-color: var(--salt-secondary);
@@ -6764,7 +6841,7 @@ dialog.salt-card-dialog::backdrop {
         transform: translateY(-3px);
         background: var(--salt-secondary);
         color: var(--salt-white);
-        box-shadow: 0 5px 12px #003a6322;
+        box-shadow: 0 5px 12px rgba(var(--salt-primary-rgb), 0.13);
     }
     .salt-page .salt-flip-carousel-arrow:not([aria-disabled="true"]):hover {
         border-color: var(--salt-secondary);
@@ -7014,7 +7091,7 @@ dialog.salt-card-dialog::backdrop {
     background: var(--salt-white);
     color: var(--salt-text);
     min-width: 0;
-    box-shadow: 0 8px 22px #001c332d;
+    box-shadow: 0 8px 22px rgba(var(--salt-text-rgb), 0.18);
 }
 .salt-page .salt-achievement-medal {
     position: relative;
@@ -7162,7 +7239,7 @@ dialog.salt-card-dialog::backdrop {
     background: var(--salt-white);
     color: var(--salt-text);
     border-radius: 12px;
-    box-shadow: 0 8px 22px #001c332d;
+    box-shadow: 0 8px 22px rgba(var(--salt-text-rgb), 0.18);
 }
 .salt-page #salt-elements-wrapup .salt-award-front {
     display: none;
