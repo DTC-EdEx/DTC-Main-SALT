@@ -114,7 +114,7 @@
 .salt-program-electrical {
     /* Electrical: the seven program colors */
     --salt-primary: #484959;
-    --salt-secondary: #484959;
+    --salt-secondary: #0062b8;
     --salt-light: #bcc2ce;
     --salt-pale: #e3e6ed;
     --salt-gray: #bcc2ce;
@@ -125,13 +125,13 @@
     --salt-primary-darker: #202128;
     --salt-primary-bright: #737684;
     --salt-primary-rgb: 72, 73, 89;
-    --salt-secondary-dark: #3a3a47;
-    --salt-secondary-darker: #282831;
-    --salt-secondary-light: #adadb4;
-    --salt-secondary-tint: #dadbde;
-    --salt-secondary-pale: #f0f0f2;
-    --salt-secondary-paler: #f8f8f8;
-    --salt-secondary-rgb: 72, 73, 89;
+    --salt-secondary-dark: #004e93;
+    --salt-secondary-darker: #003665;
+    --salt-secondary-light: #8cb8df;
+    --salt-secondary-tint: #cce0f1;
+    --salt-secondary-pale: #ebf2f9;
+    --salt-secondary-paler: #f5f9fc;
+    --salt-secondary-rgb: 0, 98, 184;
     --salt-surface-soft: #f1f3f6;
     --salt-gray-light: #dee1e7;
     --salt-gray-mid: #8f939c;
