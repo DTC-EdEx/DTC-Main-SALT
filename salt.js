@@ -1885,6 +1885,28 @@
     }
 
     /* =====================================================
+       PROGRAM COLORS
+       A page picks its program with a class on the wrapper,
+       e.g. <div class="salt-page salt-program-plumbing">.
+       Dialogs, the lightbox and the progress bar live outside
+       the wrapper, so the class is copied to <html> too.
+       ===================================================== */
+
+    function applyProgramColors(page) {
+        var holder = page.closest('[class*="salt-program-"]');
+        var match = holder && holder.className.match(/(?:^|\s)(salt-program-[a-z0-9-]+)/);
+        var root = document.documentElement;
+
+        Array.prototype.slice.call(root.classList).forEach(function (name) {
+            if (name.indexOf("salt-program-") === 0 && (!match || name !== match[1])) {
+                root.classList.remove(name);
+            }
+        });
+
+        if (match) root.classList.add(match[1]);
+    }
+
+    /* =====================================================
        INITIALIZATION
        ===================================================== */
 
@@ -1894,6 +1916,8 @@
         if (!page) {
             return false;
         }
+
+        applyProgramColors(page);
 
         var firstSection = page.querySelector(".salt-section");
         if (firstSection) firstSection.classList.add("salt-entry-first");
@@ -3585,12 +3609,12 @@
             var defs = make("defs"),
                 gradient = make("linearGradient", { id: id, gradientUnits: "userSpaceOnUse" });
             gradient.append(
-                make("stop", { offset: "0", "stop-color": "#a32434" }),
-                make("stop", { offset: "1", "stop-color": "#768b9c" })
+                make("stop", { offset: "0", style: "stop-color: var(--salt-secondary-dark, #8f202e)" }),
+                make("stop", { offset: "1", style: "stop-color: var(--salt-gray-strong, #6d6d6d)" })
             );
             defs.append(gradient);
             var path = make("path", {
-                fill: "#f3f6f8",
+                fill: "#f5f8fd",
                 stroke: "url(#" + id + ")",
                 "stroke-width": "2",
                 "stroke-linejoin": "round"

@@ -1,0 +1,15 @@
+{
+    "default": "plumbing",
+    "programs": {
+        "plumbing": {
+            "name": "Plumbing",
+            "primary": "#144992",
+            "secondary": "#b32839",
+            "light": "#c3d3e8",
+            "pale": "#eaf1fb",
+            "gray": "#dddddd",
+            "white": "#ffffff",
+            "text": "#262626"
+        }
+    }
+}
