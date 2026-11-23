@@ -65,7 +65,7 @@ Each program has one **primary** color and six supporting colors. Every color in
 | Color | What it is used for | Plumbing | HVACR | Electrical |
 | --- | --- | --- | --- | --- |
 | `primary` | Banner, headings, table headers, buttons, focus outlines | `#144992` | `#144931` | `#484959` |
-| `secondary` | Section labels, active tab and menu item, flip cards, accents | `#b32839` | none (uses primary) | none (uses primary) |
+| `secondary` | Section labels, active tab and menu item, flip cards, accents | `#b32839` | none (uses primary) | `#0062b8` (BYU Royal) |
 | `light` | Light accent borders and highlights | `#c3d3e8` | `#c3d8ca` | `#bcc2ce` |
 | `pale` | Tinted panels and backgrounds | `#eaf1fb` | `#eaf3ed` | `#e3e6ed` |
 | `gray` | Card borders and dividers | `#dddddd` | `#e8e8e8` | `#bcc2ce` |

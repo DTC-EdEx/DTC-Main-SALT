@@ -23,6 +23,7 @@
         "electrical": {
             "name": "Electrical",
             "primary": "#484959",
+            "secondary": "#0062b8",
             "light": "#bcc2ce",
             "pale": "#e3e6ed",
             "gray": "#bcc2ce",
