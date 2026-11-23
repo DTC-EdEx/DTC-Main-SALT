@@ -19,6 +19,19 @@
             "gray": "#e8e8e8",
             "white": "#ffffff",
             "text": "#262626"
+        },
+        "electrical": {
+            "name": "Electrical",
+            "primary": "#484959",
+            "light": "#bcc2ce",
+            "pale": "#e3e6ed",
+            "gray": "#bcc2ce",
+            "white": "#ffffff",
+            "text": "#262626",
+            "style": {
+                "tabs": "folder",
+                "cards": "outlined"
+            }
         }
     }
 }
