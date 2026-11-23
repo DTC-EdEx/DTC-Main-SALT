@@ -24,7 +24,7 @@ Browser CSS file:
 ```css
 @import url(https://designplus.ciditools.com/css/content.css);
 @import url(https://designplus.ciditools.com/css/editor.css);
-@import url("https://durtschidtclsa.github.io/DTC-Main-SALT/Salt.EdEx.4.0.css?v=4.2");
+@import url("https://dtc-edex.github.io/DTC-Main-SALT/Salt.EdEx.4.0.css?v=4.2");
 ```
 
 Browser JavaScript file:
@@ -32,7 +32,7 @@ Browser JavaScript file:
 ```js
 (function () {
   var s = document.createElement("script");
-  s.src = "https://durtschidtclsa.github.io/DTC-Main-SALT/Salt.EdEx.4.0.js?v=4.2";
+  s.src = "https://dtc-edex.github.io/DTC-Main-SALT/Salt.EdEx.4.0.js?v=4.2";
   document.head.appendChild(s);
 })();
 ```
@@ -41,7 +41,7 @@ Mobile app CSS file:
 
 ```css
 @import url(https://designplus.ciditools.com/css/mobile.css);
-@import url("https://durtschidtclsa.github.io/DTC-Main-SALT/Salt.Mobile.4.0.css?v=4.2");
+@import url("https://dtc-edex.github.io/DTC-Main-SALT/Salt.Mobile.4.0.css?v=4.2");
 ```
 
 Mobile app JavaScript file:
@@ -49,28 +49,28 @@ Mobile app JavaScript file:
 ```js
 (function () {
   var s = document.createElement("script");
-  s.src = "https://durtschidtclsa.github.io/DTC-Main-SALT/Salt.Mobile.4.0.js?v=4.2";
+  s.src = "https://dtc-edex.github.io/DTC-Main-SALT/Salt.Mobile.4.0.js?v=4.2";
   document.head.appendChild(s);
 })();
 ```
 
 ### About `?v=`
 
-The version number is only a cache-buster. Browsers and the app may keep an old copy of a file for a while; changing the number (for example `?v=4.2` to `?v=4.3`) makes them download a fresh copy right away. The JavaScript passes the same number on to `salt.js`. Without a change, updates still arrive on their own within about 10 minutes.
+You do not need to change the version number. It is only a cache-buster: GitHub tells browsers to keep each file for 10 minutes, so every update reaches Canvas on its own within about 10 minutes. Changing the number (for example `?v=4.2` to `?v=4.3`) only matters if you need a change to show up sooner, and even then it refreshes `Salt.EdEx.4.0.css` and the JavaScript right away but not `salt.css`, which still follows the 10-minute rule. To see a change sooner on your own computer, do a hard refresh (Ctrl+Shift+R, or Cmd+Shift+R on a Mac). The Canvas mobile app can hold on to files longer; closing and reopening the app usually fixes that.
 
 ## Program colors
 
 Each program has one **primary** color and six supporting colors. Every color in `salt.css` comes from these, so changing a program's look means changing only seven hex codes.
 
-| Color | What it is used for | Plumbing |
-| --- | --- | --- |
-| `primary` | Banner, headings, table headers, buttons, focus outlines | `#144992` |
-| `secondary` | Section labels, active tab and menu item, flip cards, accents | `#b32839` |
-| `light` | Light accent borders and highlights | `#c3d3e8` |
-| `pale` | Tinted panels and backgrounds | `#eaf1fb` |
-| `gray` | Card borders and dividers | `#dddddd` |
-| `white` | Page and card background, text on dark colors | `#ffffff` |
-| `text` | Body text | `#262626` |
+| Color | What it is used for | Plumbing | HVACR |
+| --- | --- | --- | --- |
+| `primary` | Banner, headings, table headers, buttons, focus outlines | `#144992` | `#144931` |
+| `secondary` | Section labels, active tab and menu item, flip cards, accents | `#b32839` | none (uses primary) |
+| `light` | Light accent borders and highlights | `#c3d3e8` | `#c3d8ca` |
+| `pale` | Tinted panels and backgrounds | `#eaf1fb` | `#eaf3ed` |
+| `gray` | Card borders and dividers | `#dddddd` | `#e8e8e8` |
+| `white` | Page and card background, text on dark colors | `#ffffff` | `#ffffff` |
+| `text` | Body text | `#262626` | `#262626` |
 
 Hover shades, darker and paler versions, and muted text are worked out from those seven automatically.
 
@@ -79,6 +79,8 @@ Hover shades, darker and paler versions, and muted text are worked out from thos
 ```html
 <div class="salt-page salt-program-plumbing">
 ```
+
+Programs so far: `salt-program-plumbing`, `salt-program-hvac`. A program can skip the secondary color; its accents then use the primary color. `examples/salt-component-showcase-hvac.html` is the showcase page in HVACR colors.
 
 A page with no program class uses the default colors (currently Plumbing). Answer feedback (correct green, incorrect red) stays the same in every program.
 

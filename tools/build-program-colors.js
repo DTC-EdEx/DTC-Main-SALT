@@ -114,6 +114,11 @@ function rgbList(color) {
 function build(key, program) {
     var notes = [];
     var c = {};
+    // A program with no accent color uses its primary color for accents too.
+    if (!program.secondary) {
+        program.secondary = program.primary;
+        notes.push("NOTE: no secondary color given, so accents use the primary color");
+    }
     INPUTS.forEach(function (name) {
         if (!program[name]) throw new Error(key + " is missing its " + name + " color");
         c[name] = hex(parse(program[name]));
@@ -290,7 +295,7 @@ var failed = false;
 results.forEach(function (r) {
     console.log("\n" + r.name + "  (class: salt-program-" + r.key + ")");
     r.notes.forEach(function (n) {
-        console.log("  ADJUSTED  " + n);
+        console.log(n.indexOf("NOTE: ") === 0 ? "  " + n : "  ADJUSTED  " + n);
     });
     r.checks.forEach(function (c) {
         if (!c.pass) failed = true;
