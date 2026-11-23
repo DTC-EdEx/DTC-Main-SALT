@@ -10,6 +10,15 @@
             "gray": "#dddddd",
             "white": "#ffffff",
             "text": "#262626"
+        },
+        "hvac": {
+            "name": "HVACR",
+            "primary": "#144931",
+            "light": "#c3d8ca",
+            "pale": "#eaf3ed",
+            "gray": "#e8e8e8",
+            "white": "#ffffff",
+            "text": "#262626"
         }
     }
 }
