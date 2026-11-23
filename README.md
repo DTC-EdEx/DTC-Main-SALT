@@ -12,6 +12,7 @@ SALT is the set of reusable Canvas page components (cards, tabs, reveals, games,
 | `Salt.Mobile.4.0.css` | Mobile-app-only styles. Loads `salt.css`. | Something should look different only in the Canvas app |
 | `Salt.EdEx.4.0.js` | Loads DesignPlus, ReadSpeaker, and Davis Tools, then `salt.js` | You change those browser add-ons |
 | `Salt.Mobile.4.0.js` | Marks the page as the mobile app, then loads `salt.js` | Rarely |
+| `tools/program-colors.json`, `tools/build-program-colors.js` | Each program's seven colors, and the script that turns them into CSS | A program's colors change |
 | `examples/salt-component-showcase.html` | The approved component showcase page, ready to paste into the Canvas HTML editor | A component is added or changed |
 
 The file names keep `4.0` so the Canvas theme never has to change.
@@ -56,6 +57,38 @@ Mobile app JavaScript file:
 ### About `?v=`
 
 The version number is only a cache-buster. Browsers and the app may keep an old copy of a file for a while; changing the number (for example `?v=4.2` to `?v=4.3`) makes them download a fresh copy right away. The JavaScript passes the same number on to `salt.js`. Without a change, updates still arrive on their own within about 10 minutes.
+
+## Program colors
+
+Each program has one **primary** color and six supporting colors. Every color in `salt.css` comes from these, so changing a program's look means changing only seven hex codes.
+
+| Color | What it is used for | Plumbing |
+| --- | --- | --- |
+| `primary` | Banner, headings, table headers, buttons, focus outlines | `#144992` |
+| `secondary` | Section labels, active tab and menu item, flip cards, accents | `#b32839` |
+| `light` | Light accent borders and highlights | `#c3d3e8` |
+| `pale` | Tinted panels and backgrounds | `#eaf1fb` |
+| `gray` | Card borders and dividers | `#dddddd` |
+| `white` | Page and card background, text on dark colors | `#ffffff` |
+| `text` | Body text | `#262626` |
+
+Hover shades, darker and paler versions, and muted text are worked out from those seven automatically.
+
+**Use a program's colors on a page** by adding its class to the page wrapper:
+
+```html
+<div class="salt-page salt-program-plumbing">
+```
+
+A page with no program class uses the default colors (currently Plumbing). Answer feedback (correct green, incorrect red) stays the same in every program.
+
+**Add or change a program:**
+
+1. Add or edit the program in `tools/program-colors.json`.
+2. Run `node tools/build-program-colors.js`. It rewrites the program colors block near the top of `salt.css` and prints a contrast report.
+3. Bump `?v=` in the Canvas theme files if you need the change right away.
+
+Accessibility is checked automatically against WCAG 2.2 AA (4.5:1 for text). If a requested color would be hard to read (for example white text on yellow), the script darkens it just enough to pass, uses that version, and notes it in the report and in `salt.css`.
 
 ## Authoring rules
 
