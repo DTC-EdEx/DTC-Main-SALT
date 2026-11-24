@@ -5314,7 +5314,11 @@
             button.tabIndex = selected ? 0 : -1;
             panels[i].hidden = !selected;
         });
-        if (moveFocus) buttons[index].focus();
+        if (moveFocus) buttons[index].focus({ preventScroll: true });
+        var row = buttons[index].parentNode;
+        if (row.scrollWidth > row.clientWidth) {
+            row.scrollLeft = buttons[index].offsetLeft - row.offsetLeft - 8;
+        }
     }
 
     function setupTabs(tabs) {
@@ -5327,10 +5331,9 @@
         list.setAttribute("aria-label", tabs.getAttribute("data-label") || "Resources");
         panels.forEach(function (panel, i) {
             var title = panel.querySelector(".salt-home-tab-title");
-            var button = el(
-                "button",
-                "salt-home-tab",
-                title ? title.textContent.trim() : "Tab " + (i + 1)
+            var button = el("button", "salt-home-tab");
+            button.appendChild(
+                el("span", "salt-home-tab-label", title ? title.textContent.trim() : "Tab " + (i + 1))
             );
             button.type = "button";
             button.id = uid + "-tab-" + i;
