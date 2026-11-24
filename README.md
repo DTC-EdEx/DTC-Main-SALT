@@ -127,7 +127,7 @@ The Course Description and Course Objectives use `<details>`, which opens and cl
 
 ### Student Lounge pages
 
-`examples/student-lounge/student-lounge-electrical.html` is the Student Lounge home page. It uses the same title bar, banner, quick links, and welcome card as a course home page, plus resource **tabs**: each `.salt-home-tab-panel` becomes one tab, labeled by its `.salt-home-tab-title`, and holds `.salt-home-button` links. Without JavaScript, every panel simply shows in order.
+`examples/student-lounge/student-lounge-electrical.html` is the Student Lounge home page. It uses the same title bar, banner, quick links, and welcome card as a course home page, plus folder-style resource **tabs** (a sideways-swipe row on phones): each `.salt-home-tab-panel` becomes one tab, labeled by its `.salt-home-tab-title`, and holds `.salt-home-button` links, which stack full width so a tab can hold any number. Without JavaScript, every panel simply shows in order.
 
 - `data-salt-welcome` can use `{fullname}` (from the Canvas API) or `{name}` (the short name).
 - Back to top links (`.salt-home-top a`, `.salt-back-top a`, or any link with `data-salt-top`) scroll smoothly back to the top of the page and move keyboard focus there.
