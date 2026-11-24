@@ -8298,3 +8298,616 @@ dialog.salt-card-dialog::backdrop {
         visibility: hidden;
     }
 }
+
+/* =========================================================
+   SALT COURSE HOME PAGE
+   Course title bar, banner, quick links, welcome card,
+   course description/objectives, and the module explorer.
+   Wrapper: <div class="salt-home salt-program-plumbing">
+   ========================================================= */
+
+/* Icons (Canvas strips icon fonts and SVG from pages, so the
+   icons live here and are drawn as masks in the text color). */
+.salt-home {
+    --salt-home-i-modules: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7' rx='1'/%3E%3Crect x='14' y='3' width='7' height='7' rx='1'/%3E%3Crect x='3' y='14' width='7' height='7' rx='1'/%3E%3Crect x='14' y='14' width='7' height='7' rx='1'/%3E%3C/svg%3E");
+    --salt-home-i-syllabus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6M8 13h8M8 17h8M8 9h2'/%3E%3C/svg%3E");
+    --salt-home-i-instructors: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='3' width='13' height='10' rx='1'/%3E%3Ccircle cx='6' cy='9' r='3'/%3E%3Cpath d='M1 21v-2a5 5 0 0 1 10 0v2M13 13l2 3'/%3E%3C/svg%3E");
+    --salt-home-i-lounge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E");
+    --salt-home-i-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16l4-4-4-4M8 12h8'/%3E%3C/svg%3E");
+    --salt-home-i-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'/%3E%3Ccircle cx='12' cy='10' r='3'/%3E%3C/svg%3E");
+    --salt-home-i-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12.5l2.5 2.5L16 9.5'/%3E%3C/svg%3E");
+    --salt-home-i-lock: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E");
+    --salt-home-i-circle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3C/svg%3E");
+    --salt-home-i-page: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpath d='M14 2v6h6M8 13h8M8 17h5'/%3E%3C/svg%3E");
+    --salt-home-i-assignment: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3Crect x='8' y='2' width='8' height='4' rx='1'/%3E%3Cpath d='M9 14l2 2 4-4'/%3E%3C/svg%3E");
+    --salt-home-i-quiz: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01'/%3E%3C/svg%3E");
+    --salt-home-i-discussion: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/%3E%3C/svg%3E");
+    --salt-home-i-file: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5'/%3E%3C/svg%3E");
+    --salt-home-i-link: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7'/%3E%3C/svg%3E");
+    --salt-home-i-tool: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z'/%3E%3C/svg%3E");
+    --salt-home-i-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V5M5 12l7-7 7 7'/%3E%3C/svg%3E");
+    --salt-home-i-plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E");
+}
+
+.salt-home {
+    --salt-home-bar: #262626;
+    --salt-home-done: #1e7b34;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    color: var(--salt-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+}
+
+.salt-home *,
+.salt-home *::before,
+.salt-home *::after {
+    box-sizing: border-box;
+}
+
+.salt-home [data-icon]::before,
+.salt-home .salt-home-hint::before,
+.salt-home .salt-mx-tab-pin,
+.salt-home .salt-mx-tab-state,
+.salt-home .salt-mx-type,
+.salt-home .salt-mx-status,
+.salt-home .salt-home-details summary::after,
+.salt-home .salt-home-top a::before {
+    content: "";
+    display: inline-block;
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+    background-color: currentColor;
+    -webkit-mask: var(--salt-home-icon) center / contain no-repeat;
+    mask: var(--salt-home-icon) center / contain no-repeat;
+}
+
+.salt-home [data-icon="modules"] { --salt-home-icon: var(--salt-home-i-modules); }
+.salt-home [data-icon="syllabus"] { --salt-home-icon: var(--salt-home-i-syllabus); }
+.salt-home [data-icon="instructors"] { --salt-home-icon: var(--salt-home-i-instructors); }
+.salt-home [data-icon="lounge"] { --salt-home-icon: var(--salt-home-i-lounge); }
+.salt-home [data-icon="link"] { --salt-home-icon: var(--salt-home-i-link); }
+.salt-home [data-icon="page"] { --salt-home-icon: var(--salt-home-i-page); }
+
+/* ---------- title bar ---------- */
+
+.salt-home .salt-home-title {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 16px;
+    margin: 0 !important;
+    padding: 14px 22px !important;
+    border: 0 !important;
+    border-radius: 12px 12px 0 0;
+    background: var(--salt-home-bar) !important;
+    color: #ffffff !important;
+    font-size: 1.85rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+.salt-home .salt-home-code {
+    padding: 3px 12px;
+    border: 2px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.55em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+/* ---------- banner ---------- */
+
+.salt-home .salt-home-banner {
+    margin: 0 !important;
+    line-height: 0;
+    background: var(--salt-home-bar);
+}
+
+.salt-home .salt-home-banner img {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* ---------- quick links ---------- */
+
+.salt-home .salt-home-nav {
+    margin: 0 0 24px !important;
+    border-bottom: 5px solid var(--salt-secondary);
+    border-radius: 0 0 12px 12px;
+    background: var(--salt-home-bar);
+    overflow: hidden;
+}
+
+.salt-home .salt-home-nav ul {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin: 0 !important;
+    padding: 6px !important;
+    list-style: none !important;
+    gap: 6px;
+}
+
+.salt-home .salt-home-nav li {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.salt-home .salt-home-nav a {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: #ffffff !important;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: background-color 0.15s ease;
+}
+
+.salt-home .salt-home-nav a:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.salt-home .salt-home-nav a:focus-visible,
+.salt-home .salt-home-details summary:focus-visible,
+.salt-home .salt-mx-tab:focus-visible,
+.salt-home .salt-mx-panel:focus-visible,
+.salt-home .salt-mx-items a:focus-visible,
+.salt-home .salt-mx-open:focus-visible,
+.salt-home .salt-home-top a:focus-visible {
+    outline: 3px solid var(--salt-primary-bright) !important;
+    outline-offset: 2px;
+}
+
+.salt-home .salt-home-nav a:focus-visible {
+    outline-color: #ffffff !important;
+    outline-offset: -3px;
+}
+
+/* ---------- welcome card ---------- */
+
+.salt-home .salt-home-card {
+    padding: 28px;
+    border: 1px solid var(--salt-gray);
+    border-radius: 12px;
+    background: var(--salt-white);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.salt-home .salt-home-welcome {
+    margin: 0 0 22px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    color: var(--salt-text) !important;
+    font-size: 1.9rem !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    text-align: center;
+}
+
+.salt-home .salt-home-about {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 28px;
+}
+
+.salt-home .salt-home-details {
+    border-radius: 8px;
+    background: var(--salt-pale);
+    overflow: hidden;
+}
+
+.salt-home .salt-home-details summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    position: relative;
+    min-height: 52px;
+    padding: 12px 52px;
+    background: var(--salt-primary);
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+    list-style: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.salt-home .salt-home-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.salt-home .salt-home-details summary:hover {
+    background: var(--salt-primary-dark);
+}
+
+.salt-home .salt-home-details summary::after {
+    --salt-home-icon: var(--salt-home-i-plus);
+    position: absolute;
+    right: 18px;
+    transition: transform 0.2s ease;
+}
+
+.salt-home .salt-home-details[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.salt-home .salt-home-details-body {
+    padding: 18px 24px;
+}
+
+.salt-home .salt-home-details-body > :first-child {
+    margin-top: 0 !important;
+}
+
+.salt-home .salt-home-details-body > :last-child {
+    margin-bottom: 0 !important;
+}
+
+.salt-home .salt-home-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px !important;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.salt-home .salt-home-hint::before {
+    --salt-home-icon: var(--salt-home-i-arrow);
+    width: 1.5em;
+    height: 1.5em;
+    color: var(--salt-primary);
+}
+
+/* ---------- module explorer ---------- */
+
+.salt-home .salt-module-explorer {
+    padding: 16px;
+    border: 1px solid var(--salt-gray);
+    border-radius: 12px;
+    background: var(--salt-surface-soft);
+}
+
+.salt-home .salt-module-explorer-fallback {
+    margin: 0 !important;
+}
+
+.salt-home .salt-mx-loading-state .salt-module-explorer-fallback {
+    opacity: 0.55;
+}
+
+.salt-home .salt-mx-layout {
+    display: grid;
+    grid-template-columns: minmax(200px, 290px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.salt-home .salt-mx-tabs {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.salt-home .salt-mx-tab {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 11px 12px;
+    border: 1px solid var(--salt-gray);
+    border-radius: 8px;
+    background: var(--salt-white);
+    color: var(--salt-text);
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.salt-home .salt-mx-tab:hover {
+    border-color: var(--salt-primary);
+    background: var(--salt-pale);
+}
+
+.salt-home .salt-mx-tab[aria-selected="true"] {
+    border-color: var(--salt-primary);
+    background: var(--salt-primary);
+    color: #ffffff;
+    box-shadow: inset 5px 0 0 var(--salt-secondary);
+}
+
+.salt-home .salt-mx-tab-pin {
+    --salt-home-icon: var(--salt-home-i-pin);
+    margin-top: 0.1em;
+    color: var(--salt-primary);
+}
+
+.salt-home .salt-mx-tab[aria-selected="true"] .salt-mx-tab-pin {
+    color: #ffffff;
+}
+
+.salt-home .salt-mx-tab-name {
+    flex: 1;
+}
+
+.salt-home .salt-mx-tab-state {
+    margin-top: 0.1em;
+    color: var(--salt-home-done);
+}
+
+.salt-home .salt-mx-tab[data-state="completed"] .salt-mx-tab-state { --salt-home-icon: var(--salt-home-i-check); }
+.salt-home .salt-mx-tab[data-state="locked"] .salt-mx-tab-state {
+    --salt-home-icon: var(--salt-home-i-lock);
+    color: var(--salt-gray-strong);
+}
+.salt-home .salt-mx-tab[aria-selected="true"] .salt-mx-tab-state {
+    color: #ffffff;
+}
+
+.salt-home .salt-mx-panel {
+    min-height: 100%;
+    border: 1px solid var(--salt-gray);
+    border-radius: 10px;
+    background: var(--salt-white);
+    overflow: hidden;
+}
+
+.salt-home .salt-mx-panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 14px 18px;
+    border-bottom: 3px solid var(--salt-primary);
+    background: var(--salt-pale);
+}
+
+.salt-home .salt-mx-panel-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    color: var(--salt-primary-dark) !important;
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+}
+
+.salt-home .salt-mx-open {
+    color: var(--salt-primary) !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.salt-home .salt-mx-locked-note,
+.salt-home .salt-mx-loading {
+    margin: 0 !important;
+    padding: 12px 18px;
+    color: var(--salt-text-muted);
+}
+
+.salt-home .salt-mx-locked-note {
+    border-bottom: 1px solid var(--salt-gray);
+    background: var(--salt-gray-light);
+    font-weight: 600;
+}
+
+.salt-home .salt-mx-items {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.salt-home .salt-mx-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 !important;
+    padding: 12px 18px 12px calc(18px + var(--salt-mx-indent, 0) * 24px);
+    border-bottom: 1px solid var(--salt-gray-light);
+    transition: background-color 0.15s ease;
+}
+
+.salt-home .salt-mx-item:last-child {
+    border-bottom: 0;
+}
+
+.salt-home .salt-mx-item:hover {
+    background: var(--salt-surface-soft);
+}
+
+.salt-home .salt-mx-subheader {
+    padding-top: 16px;
+    padding-bottom: 8px;
+    background: none !important;
+    color: var(--salt-text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.salt-home .salt-mx-empty {
+    padding: 16px 18px;
+    color: var(--salt-text-muted);
+}
+
+.salt-home .salt-mx-type {
+    --salt-home-icon: var(--salt-home-i-page);
+    width: 1.3em;
+    height: 1.3em;
+    color: var(--salt-primary);
+}
+
+.salt-home .salt-mx-item[data-type="Assignment"] .salt-mx-type { --salt-home-icon: var(--salt-home-i-assignment); }
+.salt-home .salt-mx-item[data-type="Quiz"] .salt-mx-type { --salt-home-icon: var(--salt-home-i-quiz); }
+.salt-home .salt-mx-item[data-type="Discussion"] .salt-mx-type { --salt-home-icon: var(--salt-home-i-discussion); }
+.salt-home .salt-mx-item[data-type="File"] .salt-mx-type { --salt-home-icon: var(--salt-home-i-file); }
+.salt-home .salt-mx-item[data-type="ExternalUrl"] .salt-mx-type { --salt-home-icon: var(--salt-home-i-link); }
+.salt-home .salt-mx-item[data-type="ExternalTool"] .salt-mx-type { --salt-home-icon: var(--salt-home-i-tool); }
+
+.salt-home .salt-mx-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.salt-home .salt-mx-link {
+    color: var(--salt-text) !important;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+
+.salt-home .salt-mx-link:hover {
+    color: var(--salt-primary) !important;
+    text-decoration: underline !important;
+}
+
+.salt-home .salt-mx-meta {
+    color: var(--salt-text-muted);
+    font-size: 0.82rem;
+}
+
+.salt-home .salt-mx-status {
+    width: 1.35em;
+    height: 1.35em;
+}
+
+.salt-home .salt-mx-status-done {
+    --salt-home-icon: var(--salt-home-i-check);
+    color: var(--salt-home-done);
+}
+
+.salt-home .salt-mx-status-todo {
+    --salt-home-icon: var(--salt-home-i-circle);
+    color: var(--salt-gray-mid);
+}
+
+.salt-home .salt-mx-status-locked {
+    --salt-home-icon: var(--salt-home-i-lock);
+    color: var(--salt-gray-strong);
+}
+
+/* ---------- back to top ---------- */
+
+.salt-home .salt-home-top {
+    margin: 24px 0 0 !important;
+    text-align: center;
+}
+
+.salt-home .salt-home-top a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: var(--salt-primary);
+    color: #ffffff !important;
+    font-weight: 700;
+    text-decoration: none !important;
+}
+
+.salt-home .salt-home-top a::before {
+    --salt-home-icon: var(--salt-home-i-up);
+}
+
+.salt-home .salt-home-top a:hover {
+    background: var(--salt-primary-dark);
+}
+
+/* ---------- phones and narrow windows ---------- */
+
+@media (max-width: 760px) {
+    .salt-home .salt-home-title {
+        font-size: 1.4rem !important;
+        padding: 12px 16px !important;
+    }
+
+    .salt-home .salt-home-nav ul {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .salt-home .salt-home-nav a {
+        justify-content: flex-start;
+        font-size: 0.95rem;
+    }
+
+    .salt-home .salt-home-card {
+        padding: 18px 14px;
+    }
+
+    .salt-home .salt-home-welcome {
+        font-size: 1.45rem !important;
+    }
+
+    .salt-home .salt-home-details summary {
+        font-size: 1.05rem;
+        padding: 12px 44px 12px 16px;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .salt-home .salt-module-explorer {
+        padding: 10px;
+    }
+
+    /* Module buttons become a row you swipe sideways, so the
+       selected module's items stay near the top of the screen. */
+    .salt-home .salt-mx-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .salt-home .salt-mx-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        scroll-snap-type: x proximity;
+    }
+
+    .salt-home .salt-mx-tab {
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 240px;
+        scroll-snap-align: start;
+    }
+
+    .salt-home .salt-mx-tab[aria-selected="true"] {
+        box-shadow: inset 0 -4px 0 var(--salt-secondary);
+    }
+
+    .salt-home .salt-mx-item {
+        padding-left: calc(14px + var(--salt-mx-indent, 0) * 12px);
+        padding-right: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .salt-home *,
+    .salt-home *::before,
+    .salt-home *::after {
+        transition: none !important;
+    }
+}

@@ -4912,3 +4912,440 @@
         document.addEventListener("DOMContentLoaded", start, { once: true });
     else start();
 })();
+
+/* =========================================================
+   SALT COURSE HOME PAGE
+   Replaces the DesignPLUS home page "personalized welcome"
+   and "module list" tools.
+
+   - .salt-home-welcome[data-salt-welcome]: swaps "{name}" for
+     the student's short name (from Canvas, no API call needed).
+   - a[data-salt-course-path]: points the link at this course,
+     so a copied page never links back to the old course.
+   - .salt-module-explorer: loads this course's published
+     modules and items from the Canvas API and shows them as
+     a vertical list of module buttons with one module's items
+     at a time. If the API can't be reached (for example in
+     the mobile app), the fallback text in the HTML stays.
+   ========================================================= */
+(function () {
+    "use strict";
+
+    if (window.SALTHome) return;
+
+    var REQUIREMENTS = {
+        must_view: "View",
+        must_mark_done: "Mark done",
+        must_submit: "Submit",
+        must_contribute: "Contribute",
+        min_score: "Score at least {n}",
+        min_percentage: "Score at least {n}%"
+    };
+
+    var TYPE_LABELS = {
+        Page: "Page",
+        Assignment: "Assignment",
+        Quiz: "Quiz",
+        Discussion: "Discussion",
+        File: "File",
+        ExternalUrl: "Link",
+        ExternalTool: "External tool"
+    };
+
+    function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+    }
+
+    function mock() {
+        return window.SALT_HOME_MOCK || null;
+    }
+
+    function currentCourseId(root) {
+        var fromAttr = root && root.getAttribute("data-course-id");
+        if (fromAttr) return fromAttr;
+        if (window.ENV && window.ENV.COURSE_ID) return String(window.ENV.COURSE_ID);
+        var match = location.pathname.match(/\/courses\/(\d+)/);
+        return match ? match[1] : null;
+    }
+
+    function shortName() {
+        if (mock()) return mock().userName || "";
+        var user = window.ENV && window.ENV.current_user;
+        return (user && (user.display_name || user.short_name)) || "";
+    }
+
+    /* ---------- welcome + course links ---------- */
+
+    function personalize(home) {
+        var heading = home.querySelector(".salt-home-welcome[data-salt-welcome]");
+        var name = shortName();
+        if (heading && name && !heading._saltDone) {
+            heading._saltDone = true;
+            heading.textContent = heading
+                .getAttribute("data-salt-welcome")
+                .replace("{name}", name);
+        }
+
+        var courseId = currentCourseId(home);
+        if (!courseId) return;
+        home.querySelectorAll("a[data-salt-course-path]").forEach(function (link) {
+            var path = link.getAttribute("data-salt-course-path").replace(/^\/+/, "");
+            link.setAttribute("href", "/courses/" + courseId + (path ? "/" + path : ""));
+        });
+    }
+
+    /* ---------- Canvas API ---------- */
+
+    function getJSON(url) {
+        return fetch(url, {
+            credentials: "same-origin",
+            headers: { Accept: "application/json" }
+        }).then(function (response) {
+            if (!response.ok) throw new Error("Canvas API " + response.status);
+            var next = null;
+            var links = response.headers.get("Link") || "";
+            links.split(",").forEach(function (part) {
+                var m = part.match(/<([^>]+)>;\s*rel="next"/);
+                if (m) next = m[1];
+            });
+            return response.text().then(function (text) {
+                return { data: JSON.parse(text.replace(/^while\(1\);/, "")), next: next };
+            });
+        });
+    }
+
+    function getAll(url, collected) {
+        collected = collected || [];
+        return getJSON(url).then(function (page) {
+            collected = collected.concat(page.data);
+            return page.next ? getAll(page.next, collected) : collected;
+        });
+    }
+
+    function loadModules(courseId) {
+        if (mock()) return Promise.resolve(JSON.parse(JSON.stringify(mock().modules)));
+        return getAll(
+            "/api/v1/courses/" +
+                courseId +
+                "/modules?include[]=items&include[]=content_details&per_page=50"
+        );
+    }
+
+    /* Canvas leaves items out of the module list when a module has many
+       items; those are loaded the first time the module is opened. */
+    function loadItems(courseId, module) {
+        if (module.items) return Promise.resolve(module.items);
+        return getAll(
+            "/api/v1/courses/" +
+                courseId +
+                "/modules/" +
+                module.id +
+                "/items?include[]=content_details&per_page=100"
+        ).then(function (items) {
+            module.items = items;
+            return items;
+        });
+    }
+
+    function visible(list) {
+        return (list || []).filter(function (item) {
+            return item.published !== false;
+        });
+    }
+
+    /* ---------- rendering ---------- */
+
+    function moduleState(module) {
+        if (module.state === "completed") return "completed";
+        if (module.state === "locked") return "locked";
+        return "";
+    }
+
+    function requirementText(req) {
+        var text = REQUIREMENTS[req.type] || "";
+        return text.replace("{n}", req.min_score != null ? req.min_score : req.min_percentage);
+    }
+
+    function renderItems(panel, courseId, module, items) {
+        var list = el("ul", "salt-mx-items");
+        var shown = visible(items);
+
+        if (!shown.length) {
+            list.appendChild(el("li", "salt-mx-empty", "Nothing has been added to this module yet."));
+        }
+
+        shown.forEach(function (item) {
+            var li = el("li", "salt-mx-item");
+            li.setAttribute("data-type", item.type || "");
+            if (item.indent) li.style.setProperty("--salt-mx-indent", String(Math.min(item.indent, 5)));
+
+            if (item.type === "SubHeader") {
+                li.className = "salt-mx-item salt-mx-subheader";
+                li.textContent = item.title;
+                list.appendChild(li);
+                return;
+            }
+
+            var icon = el("span", "salt-mx-type");
+            icon.setAttribute("aria-hidden", "true");
+            li.appendChild(icon);
+
+            var body = el("span", "salt-mx-body");
+            var link = el("a", "salt-mx-link", item.title);
+            link.href = item.html_url || item.external_url || "#";
+            var typeLabel = TYPE_LABELS[item.type];
+            if (typeLabel) {
+                var sr = el("span", "salt-sr-only", typeLabel + ": ");
+                link.insertBefore(sr, link.firstChild);
+            }
+            body.appendChild(link);
+
+            var details = [];
+            var req = item.completion_requirement;
+            if (req && requirementText(req)) details.push(requirementText(req));
+            var cd = item.content_details || {};
+            if (cd.due_at) {
+                details.push(
+                    "Due " +
+                        new Date(cd.due_at).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric"
+                        })
+                );
+            }
+            if (cd.points_possible) details.push(cd.points_possible + " pts");
+            if (details.length) body.appendChild(el("span", "salt-mx-meta", details.join(" · ")));
+            li.appendChild(body);
+
+            var status = null;
+            if (cd.locked_for_user) {
+                status = el("span", "salt-mx-status salt-mx-status-locked");
+                status.appendChild(el("span", "salt-sr-only", "Locked"));
+            } else if (req && req.completed) {
+                status = el("span", "salt-mx-status salt-mx-status-done");
+                status.appendChild(el("span", "salt-sr-only", "Completed"));
+            } else if (req) {
+                status = el("span", "salt-mx-status salt-mx-status-todo");
+                status.appendChild(el("span", "salt-sr-only", "Not completed yet"));
+            }
+            if (status) li.appendChild(status);
+
+            list.appendChild(li);
+        });
+
+        panel.appendChild(list);
+    }
+
+    function showModule(explorer, index, moveFocus) {
+        var state = explorer._saltModules;
+        var module = state.modules[index];
+        var tabs = explorer.querySelectorAll(".salt-mx-tab");
+        var panel = explorer.querySelector(".salt-mx-panel");
+
+        tabs.forEach(function (tab, i) {
+            var selected = i === index;
+            tab.setAttribute("aria-selected", String(selected));
+            tab.tabIndex = selected ? 0 : -1;
+            tab.classList.toggle("salt-mx-tab-active", selected);
+        });
+        if (moveFocus) tabs[index].focus({ preventScroll: true });
+        /* On phones the module buttons are a sideways row: keep the
+           selected one in view without scrolling the whole page. */
+        var row = tabs[index].parentNode;
+        if (row.scrollWidth > row.clientWidth) {
+            row.scrollLeft = tabs[index].offsetLeft - row.offsetLeft - 8;
+        }
+
+        panel.setAttribute("aria-labelledby", tabs[index].id);
+        panel.replaceChildren();
+
+        var header = el("div", "salt-mx-panel-header");
+        var title = el("h3", "salt-mx-panel-title", module.name);
+        header.appendChild(title);
+        var open = el("a", "salt-mx-open", "Open in Modules");
+        open.href = "/courses/" + state.courseId + "/modules#module_" + module.id;
+        header.appendChild(open);
+        panel.appendChild(header);
+
+        if (moduleState(module) === "locked") {
+            var note = "This module is locked";
+            if (module.unlock_at) {
+                note +=
+                    " until " +
+                    new Date(module.unlock_at).toLocaleDateString(undefined, {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric"
+                    });
+            } else if (module.prerequisite_module_ids && module.prerequisite_module_ids.length) {
+                note += " until you finish the modules before it";
+            }
+            panel.appendChild(el("p", "salt-mx-locked-note", note + "."));
+        }
+
+        try {
+            sessionStorage.setItem("salt-home-module-" + state.courseId, String(module.id));
+        } catch (e) {}
+
+        var token = (explorer._saltToken = {});
+        if (module.items) {
+            renderItems(panel, state.courseId, module, module.items);
+            return;
+        }
+        var loading = el("p", "salt-mx-loading", "Loading module items…");
+        panel.appendChild(loading);
+        loadItems(state.courseId, module)
+            .then(function (items) {
+                if (explorer._saltToken !== token) return;
+                loading.remove();
+                renderItems(panel, state.courseId, module, items);
+            })
+            .catch(function () {
+                if (explorer._saltToken !== token) return;
+                loading.textContent = "These items could not be loaded. Use “Open in Modules” instead.";
+            });
+    }
+
+    function defaultIndex(courseId, modules) {
+        var remembered = null;
+        try {
+            remembered = sessionStorage.getItem("salt-home-module-" + courseId);
+        } catch (e) {}
+        for (var i = 0; i < modules.length; i++) {
+            if (remembered && String(modules[i].id) === remembered) return i;
+        }
+        /* Otherwise start on the first module the student hasn't finished. */
+        for (var j = 0; j < modules.length; j++) {
+            var s = modules[j].state;
+            if (s === "unlocked" || s === "started") return j;
+        }
+        return 0;
+    }
+
+    function build(explorer, courseId, modules) {
+        modules = visible(modules);
+        if (!modules.length) return false;
+
+        var uid = "salt-mx-" + Math.random().toString(36).slice(2, 8);
+        var layout = el("div", "salt-mx-layout");
+        var tablist = el("div", "salt-mx-tabs");
+        tablist.setAttribute("role", "tablist");
+        tablist.setAttribute("aria-orientation", "vertical");
+        tablist.setAttribute("aria-label", explorer.getAttribute("data-label") || "Course modules");
+
+        var panel = el("div", "salt-mx-panel");
+        panel.id = uid + "-panel";
+        panel.setAttribute("role", "tabpanel");
+        panel.tabIndex = 0;
+
+        modules.forEach(function (module, i) {
+            var tab = el("button", "salt-mx-tab");
+            tab.type = "button";
+            tab.id = uid + "-tab-" + i;
+            tab.setAttribute("role", "tab");
+            tab.setAttribute("aria-controls", panel.id);
+            tab.setAttribute("data-index", String(i));
+            var state = moduleState(module);
+            if (state) tab.setAttribute("data-state", state);
+            tab.appendChild(el("span", "salt-mx-tab-pin")).setAttribute("aria-hidden", "true");
+            tab.appendChild(el("span", "salt-mx-tab-name", module.name));
+            if (state) {
+                var badge = el("span", "salt-mx-tab-state");
+                badge.appendChild(
+                    el("span", "salt-sr-only", state === "completed" ? "(completed)" : "(locked)")
+                );
+                tab.appendChild(badge);
+            }
+            tablist.appendChild(tab);
+        });
+
+        layout.appendChild(tablist);
+        layout.appendChild(panel);
+
+        explorer._saltModules = { courseId: courseId, modules: modules };
+        explorer.replaceChildren(layout);
+        explorer.classList.add("salt-mx-ready");
+        showModule(explorer, defaultIndex(courseId, modules), false);
+        return true;
+    }
+
+    function setupExplorer(explorer, courseId) {
+        if (explorer._saltStarted) return;
+        explorer._saltStarted = true;
+        if (!courseId && !mock()) return;
+
+        explorer.classList.add("salt-mx-loading-state");
+        loadModules(courseId)
+            .then(function (modules) {
+                explorer.classList.remove("salt-mx-loading-state");
+                build(explorer, courseId, modules);
+            })
+            .catch(function () {
+                /* Keep the author's fallback text and links. */
+                explorer.classList.remove("salt-mx-loading-state");
+            });
+    }
+
+    /* ---------- events ---------- */
+
+    document.addEventListener("click", function (event) {
+        if (!(event.target instanceof Element)) return;
+        var tab = event.target.closest(".salt-mx-tab");
+        if (!tab) return;
+        var explorer = tab.closest(".salt-module-explorer");
+        showModule(explorer, Number(tab.getAttribute("data-index")), false);
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (!(event.target instanceof Element)) return;
+        var tab = event.target.closest(".salt-mx-tab");
+        if (!tab) return;
+        var explorer = tab.closest(".salt-module-explorer");
+        var count = explorer._saltModules.modules.length;
+        var index = Number(tab.getAttribute("data-index"));
+        var next = null;
+        if (event.key === "ArrowDown" || event.key === "ArrowRight") next = (index + 1) % count;
+        else if (event.key === "ArrowUp" || event.key === "ArrowLeft") next = (index - 1 + count) % count;
+        else if (event.key === "Home") next = 0;
+        else if (event.key === "End") next = count - 1;
+        if (next === null) return;
+        event.preventDefault();
+        showModule(explorer, next, true);
+    });
+
+    /* ---------- start ---------- */
+
+    function initialize() {
+        document.querySelectorAll(".salt-home").forEach(function (home) {
+            personalize(home);
+            var courseId = currentCourseId(home);
+            home.querySelectorAll(".salt-module-explorer").forEach(function (explorer) {
+                setupExplorer(explorer, currentCourseId(explorer) || courseId);
+            });
+        });
+    }
+
+    window.SALTHome = { initialize: initialize };
+
+    function start() {
+        initialize();
+        new MutationObserver(function (records) {
+            var relevant = records.some(function (record) {
+                return Array.from(record.addedNodes).some(function (node) {
+                    return (
+                        node.nodeType === 1 &&
+                        (node.matches(".salt-home") || node.querySelector(".salt-home"))
+                    );
+                });
+            });
+            if (relevant) initialize();
+        }).observe(document.body, { childList: true, subtree: true });
+    }
+
+    if (document.readyState === "loading")
+        document.addEventListener("DOMContentLoaded", start, { once: true });
+    else start();
+})();

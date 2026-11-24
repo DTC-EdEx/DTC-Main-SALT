@@ -14,6 +14,7 @@ SALT is the set of reusable Canvas page components (cards, tabs, reveals, games,
 | `Salt.Mobile.4.0.js` | Marks the page as the mobile app, then loads `salt.js` | Rarely |
 | `tools/program-colors.json`, `tools/build-program-colors.js` | Each program's seven colors, and the script that turns them into CSS | A program's colors change |
 | `examples/salt-component-showcase.html` | The approved component showcase page, ready to paste into the Canvas HTML editor | A component is added or changed |
+| `examples/home-page-plumbing.html` | A course home page (title bar, banner, quick links, welcome, module explorer), ready to paste into a course's Front Page | You start a new course home page |
 
 The file names keep `4.0` so the Canvas theme never has to change.
 
@@ -109,3 +110,16 @@ Accessibility is checked automatically against WCAG 2.2 AA (4.5:1 for text). If 
   - `data-salt-expand-all` on `.salt-reveal-group`: adds Open all / Close all.
   - `data-salt-filter="Filter components"` on `.salt-table-container`: adds a filter box.
   - `data-title` on `.salt-checklist`: the checklist heading.
+
+## Course home pages
+
+`examples/home-page-plumbing.html` replaces the DesignPLUS home page. Paste it into the HTML editor of the course's Front Page, then change four things (they're listed at the top of the file): the program class, the course code and name, the banner image, and the description and objectives.
+
+What happens on its own when the page loads (nothing to set up per course):
+
+- **Welcome message.** `data-salt-welcome="Welcome {name} to TEPL 1120!"` swaps `{name}` for the student's short name, taken from Canvas itself (no API call). If the name isn't available, such as in the mobile app, the heading reads "Welcome to TEPL 1120!".
+- **Module explorer.** `.salt-module-explorer` reads the course's modules through the Canvas API as the signed-in user, so students only see published modules and items, plus their own progress: a green check for finished requirements, an empty circle for unfinished ones, and a lock for locked modules or items. Module buttons are on the left; the selected module's items are on the right. On phones the buttons become a row you swipe sideways. It opens on the first module the student hasn't finished, and remembers the last module picked during the visit. New, renamed, or reordered modules show up without editing the page.
+- **Links to this course.** A link with `data-salt-course-path="modules"` always opens this course's Modules page, even after a course copy.
+- **Fallback.** If the API can't be reached (for example in some versions of the Canvas mobile app), the text inside the explorer stays: a link to Modules.
+
+The Course Description and Course Objectives use `<details>`, which opens and closes without JavaScript, so they work everywhere, including the mobile app.
