@@ -4979,14 +4979,28 @@
 
     /* ---------- welcome + course links ---------- */
 
+    /* Full name ("Trae Durtschi") isn't in Canvas's page data, so it
+       comes from the API. If that fails, the short name is used. */
+    function fullName() {
+        if (mock()) return Promise.resolve(mock().userFullName || mock().userName || "");
+        return getJSON("/api/v1/users/self")
+            .then(function (page) {
+                return (page.data && page.data.name) || shortName();
+            })
+            .catch(shortName);
+    }
+
     function personalize(home) {
         var heading = home.querySelector(".salt-home-welcome[data-salt-welcome]");
-        var name = shortName();
-        if (heading && name && !heading._saltDone) {
+        if (heading && !heading._saltDone) {
             heading._saltDone = true;
-            heading.textContent = heading
-                .getAttribute("data-salt-welcome")
-                .replace("{name}", name);
+            var template = heading.getAttribute("data-salt-welcome");
+            var lookup =
+                template.indexOf("{fullname}") > -1 ? fullName() : Promise.resolve(shortName());
+            lookup.then(function (name) {
+                if (!name) return;
+                heading.textContent = template.replace("{fullname}", name).replace("{name}", name);
+            });
         }
 
         var courseId = currentCourseId(home);
@@ -5289,28 +5303,141 @@
             });
     }
 
+    /* ---------- resource tabs (.salt-home-tabs) ---------- */
+
+    function selectTab(tabs, index, moveFocus) {
+        var buttons = tabs.querySelectorAll(".salt-home-tab");
+        var panels = tabs.querySelectorAll(":scope > .salt-home-tab-panel");
+        buttons.forEach(function (button, i) {
+            var selected = i === index;
+            button.setAttribute("aria-selected", String(selected));
+            button.tabIndex = selected ? 0 : -1;
+            panels[i].hidden = !selected;
+        });
+        if (moveFocus) buttons[index].focus();
+    }
+
+    function setupTabs(tabs) {
+        if (tabs.classList.contains("salt-home-tabs-ready")) return;
+        var panels = tabs.querySelectorAll(":scope > .salt-home-tab-panel");
+        if (!panels.length) return;
+        var uid = "salt-ht-" + Math.random().toString(36).slice(2, 8);
+        var list = el("div", "salt-home-tablist");
+        list.setAttribute("role", "tablist");
+        list.setAttribute("aria-label", tabs.getAttribute("data-label") || "Resources");
+        panels.forEach(function (panel, i) {
+            var title = panel.querySelector(".salt-home-tab-title");
+            var button = el(
+                "button",
+                "salt-home-tab",
+                title ? title.textContent.trim() : "Tab " + (i + 1)
+            );
+            button.type = "button";
+            button.id = uid + "-tab-" + i;
+            button.setAttribute("role", "tab");
+            button.setAttribute("data-index", String(i));
+            button.setAttribute("aria-controls", uid + "-panel-" + i);
+            panel.id = uid + "-panel-" + i;
+            panel.setAttribute("role", "tabpanel");
+            panel.setAttribute("aria-labelledby", button.id);
+            panel.tabIndex = 0;
+            list.appendChild(button);
+        });
+        tabs.insertBefore(list, tabs.firstChild);
+        tabs.classList.add("salt-home-tabs-ready");
+        selectTab(tabs, 0, false);
+    }
+
+    /* ---------- contact cards: initials when there's no photo ---------- */
+
+    function setupContactCards() {
+        document.querySelectorAll(".salt-contact-card").forEach(function (card) {
+            if (card.querySelector("img, .salt-contact-initials")) return;
+            var nameNode = card.querySelector(".salt-contact-name");
+            if (!nameNode) return;
+            var initials = nameNode.textContent
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean)
+                .map(function (word) {
+                    return word.charAt(0).toUpperCase();
+                });
+            if (!initials.length) return;
+            var badge = el(
+                "span",
+                "salt-contact-initials",
+                initials[0] + (initials.length > 1 ? initials[initials.length - 1] : "")
+            );
+            badge.setAttribute("aria-hidden", "true");
+            card.insertBefore(badge, card.firstChild);
+        });
+    }
+
+    /* ---------- back to top ---------- */
+
+    function backToTop(link) {
+        var target =
+            link.closest(".salt-home") || link.closest(".salt-page") || document.body;
+        var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+        /* Move keyboard focus to the top as well, without a second jump. */
+        var heading = target.querySelector("h1, h2");
+        if (heading) {
+            if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
+            heading.focus({ preventScroll: true });
+        }
+    }
+
     /* ---------- events ---------- */
 
     document.addEventListener("click", function (event) {
         if (!(event.target instanceof Element)) return;
+        var top = event.target.closest(".salt-home-top a, .salt-back-top a, a[data-salt-top]");
+        if (top) {
+            event.preventDefault();
+            backToTop(top);
+            return;
+        }
+        var homeTab = event.target.closest(".salt-home-tab");
+        if (homeTab) {
+            selectTab(homeTab.closest(".salt-home-tabs"), Number(homeTab.getAttribute("data-index")), false);
+            return;
+        }
         var tab = event.target.closest(".salt-mx-tab");
         if (!tab) return;
         var explorer = tab.closest(".salt-module-explorer");
         showModule(explorer, Number(tab.getAttribute("data-index")), false);
     });
 
+    function arrowTarget(key, index, count) {
+        if (key === "ArrowDown" || key === "ArrowRight") return (index + 1) % count;
+        if (key === "ArrowUp" || key === "ArrowLeft") return (index - 1 + count) % count;
+        if (key === "Home") return 0;
+        if (key === "End") return count - 1;
+        return null;
+    }
+
     document.addEventListener("keydown", function (event) {
         if (!(event.target instanceof Element)) return;
+        var homeTab = event.target.closest(".salt-home-tab");
+        if (homeTab) {
+            var tabs = homeTab.closest(".salt-home-tabs");
+            var target = arrowTarget(
+                event.key,
+                Number(homeTab.getAttribute("data-index")),
+                tabs.querySelectorAll(".salt-home-tab").length
+            );
+            if (target === null) return;
+            event.preventDefault();
+            selectTab(tabs, target, true);
+            return;
+        }
         var tab = event.target.closest(".salt-mx-tab");
         if (!tab) return;
         var explorer = tab.closest(".salt-module-explorer");
         var count = explorer._saltModules.modules.length;
         var index = Number(tab.getAttribute("data-index"));
-        var next = null;
-        if (event.key === "ArrowDown" || event.key === "ArrowRight") next = (index + 1) % count;
-        else if (event.key === "ArrowUp" || event.key === "ArrowLeft") next = (index - 1 + count) % count;
-        else if (event.key === "Home") next = 0;
-        else if (event.key === "End") next = count - 1;
+        var next = arrowTarget(event.key, index, count);
         if (next === null) return;
         event.preventDefault();
         showModule(explorer, next, true);
@@ -5325,7 +5452,9 @@
             home.querySelectorAll(".salt-module-explorer").forEach(function (explorer) {
                 setupExplorer(explorer, currentCourseId(explorer) || courseId);
             });
+            home.querySelectorAll(".salt-home-tabs").forEach(setupTabs);
         });
+        setupContactCards();
     }
 
     window.SALTHome = { initialize: initialize };
@@ -5337,7 +5466,8 @@
                 return Array.from(record.addedNodes).some(function (node) {
                     return (
                         node.nodeType === 1 &&
-                        (node.matches(".salt-home") || node.querySelector(".salt-home"))
+                        (node.matches(".salt-home, .salt-contact-card") ||
+                            node.querySelector(".salt-home, .salt-contact-card"))
                     );
                 });
             });

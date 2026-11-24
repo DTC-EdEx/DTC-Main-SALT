@@ -14,6 +14,7 @@ SALT is the set of reusable Canvas page components (cards, tabs, reveals, games,
 | `Salt.Mobile.4.0.js` | Marks the page as the mobile app, then loads `salt.js` | Rarely |
 | `tools/program-colors.json`, `tools/build-program-colors.js` | Each program's seven colors, and the script that turns them into CSS | A program's colors change |
 | `examples/salt-component-showcase.html` | The approved component showcase page, ready to paste into the Canvas HTML editor | A component is added or changed |
+| `examples/student-lounge/` | The Electrical Student Lounge home page and its pages (Advising and Support, Peer Mentorship, Faculty Contact Info, Course Completion Instructions), ready to paste | You set up a Student Lounge |
 | `examples/home-page-plumbing.html` | A course home page (title bar, banner, quick links, welcome, module explorer), ready to paste into a course's Front Page | You start a new course home page |
 
 The file names keep `4.0` so the Canvas theme never has to change.
@@ -123,3 +124,21 @@ What happens on its own when the page loads (nothing to set up per course):
 - **Fallback.** If the API can't be reached (for example in some versions of the Canvas mobile app), the text inside the explorer stays: a link to Modules.
 
 The Course Description and Course Objectives use `<details>`, which opens and closes without JavaScript, so they work everywhere, including the mobile app.
+
+### Student Lounge pages
+
+`examples/student-lounge/student-lounge-electrical.html` is the Student Lounge home page. It uses the same title bar, banner, quick links, and welcome card as a course home page, plus resource **tabs**: each `.salt-home-tab-panel` becomes one tab, labeled by its `.salt-home-tab-title`, and holds `.salt-home-button` links. Without JavaScript, every panel simply shows in order.
+
+- `data-salt-welcome` can use `{fullname}` (from the Canvas API) or `{name}` (the short name).
+- Back to top links (`.salt-home-top a`, `.salt-back-top a`, or any link with `data-salt-top`) scroll smoothly back to the top of the page and move keyboard focus there.
+- Canvas's "external site" arrow is hidden on the quick links and resource buttons; its screen-reader text stays.
+
+The other Student Lounge pages are regular SALT pages (`.salt-page`) and introduce these reusable components:
+
+| Component | Markup | Notes |
+| --- | --- | --- |
+| Contact cards | `.salt-contact-grid` > `.salt-contact-card` with `.salt-contact-role`, `.salt-contact-name`, `.salt-contact-line` (`data-icon="phone"` or `"calendar"`; email is the default icon) | Raised, layered look that lifts on hover. A card with no `<img>` shows the person's initials. Add `salt-contact-grid-wide` for side-by-side photo cards. |
+| Steps | `<ol class="salt-steps">`, each `<li>` starting with a `<strong>` title | Numbered step cards |
+| Alert callout | `.salt-callout.salt-callout-alert` | A callout in the secondary color for important notes |
+| Embedded form | `.salt-embed` > `.salt-embed-label` + `<iframe>` | A framed form or guide with a label |
+| Button link | `<a class="salt-button-link">` | A single call-to-action button |
