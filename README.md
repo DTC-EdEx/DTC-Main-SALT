@@ -137,7 +137,7 @@ The other Student Lounge pages are regular SALT pages (`.salt-page`) and introdu
 
 | Component | Markup | Notes |
 | --- | --- | --- |
-| Contact cards | `.salt-contact-grid` > `.salt-contact-card` with `.salt-contact-role`, `.salt-contact-name`, `.salt-contact-line` (`data-icon="phone"` or `"calendar"`; email is the default icon) | Raised, layered look that lifts on hover. A card with no `<img>` shows the person's initials. Add `salt-contact-grid-wide` for side-by-side photo cards. |
+| Contact cards | `.salt-contact-grid` > `.salt-contact-card` with `.salt-contact-role`, `.salt-contact-name`, `.salt-contact-line` (`data-icon="phone"` or `"calendar"`; email is the default icon) | Raised, layered look that lifts on hover. A card with no `<img>` shows the person's initials. Every email link (`mailto:`) gets a copy button to its right that copies the address and shows "Copied!"; nothing to add in the HTML. Add `salt-contact-grid-wide` for side-by-side photo cards. |
 | Steps | `<ol class="salt-steps">`, each `<li>` starting with a `<strong>` title | Numbered step cards |
 | Alert callout | `.salt-callout.salt-callout-alert` | A callout in the secondary color for important notes |
 | Embedded form | `.salt-embed` > `.salt-embed-label` + `<iframe>` | A framed form or guide with a label |

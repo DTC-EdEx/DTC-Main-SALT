@@ -5353,8 +5353,80 @@
 
     /* ---------- contact cards: initials when there's no photo ---------- */
 
+    /* Each email address on a contact card gets a copy button to its
+       right. Canvas strips <button> from page HTML, so it's added here. */
+    function addCopyButtons(card) {
+        card.querySelectorAll(".salt-contact-line").forEach(function (line) {
+            var link = line.querySelector('a[href^="mailto:"]');
+            if (!link || line.querySelector(".salt-copy-email")) return;
+            var email = link.getAttribute("href").slice(7).split("?")[0];
+            try {
+                email = decodeURIComponent(email);
+            } catch (e) {}
+            if (!email) return;
+            var button = el("button", "salt-copy-email");
+            button.type = "button";
+            button.setAttribute("data-email", email);
+            button.setAttribute("aria-label", "Copy email address " + email);
+            button.title = "Copy email address";
+            var status = el("span", "salt-copy-status");
+            status.setAttribute("role", "status");
+            status.setAttribute("aria-live", "polite");
+            line.classList.add("salt-contact-line-copy");
+            line.appendChild(button);
+            line.appendChild(status);
+        });
+    }
+
+    function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text);
+        }
+        /* Older browsers and some app web views. */
+        return new Promise(function (resolve, reject) {
+            var area = document.createElement("textarea");
+            area.value = text;
+            area.setAttribute("readonly", "");
+            area.style.position = "fixed";
+            area.style.opacity = "0";
+            document.body.appendChild(area);
+            area.select();
+            var ok = false;
+            try {
+                ok = document.execCommand("copy");
+            } catch (e) {}
+            area.remove();
+            if (ok) resolve();
+            else reject(new Error("Copy failed"));
+        });
+    }
+
+    function copyEmail(button) {
+        var email = button.getAttribute("data-email");
+        var status = button.parentNode.querySelector(".salt-copy-status");
+        function show(message, copied) {
+            button.classList.toggle("salt-copied", copied);
+            status.textContent = message;
+            status.classList.add("salt-copy-status-visible");
+            clearTimeout(button._saltTimer);
+            button._saltTimer = setTimeout(function () {
+                button.classList.remove("salt-copied");
+                status.classList.remove("salt-copy-status-visible");
+                status.textContent = "";
+            }, 2000);
+        }
+        copyText(email)
+            .then(function () {
+                show("Copied!", true);
+            })
+            .catch(function () {
+                show("Couldn't copy. Select the address instead.", false);
+            });
+    }
+
     function setupContactCards() {
         document.querySelectorAll(".salt-contact-card").forEach(function (card) {
+            addCopyButtons(card);
             if (card.querySelector("img, .salt-contact-initials")) return;
             var nameNode = card.querySelector(".salt-contact-name");
             if (!nameNode) return;
@@ -5399,6 +5471,11 @@
         if (top) {
             event.preventDefault();
             backToTop(top);
+            return;
+        }
+        var copy = event.target.closest(".salt-copy-email");
+        if (copy) {
+            copyEmail(copy);
             return;
         }
         var homeTab = event.target.closest(".salt-home-tab");
