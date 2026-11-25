@@ -85,7 +85,7 @@
 .salt-program-hvac {
     /* HVACR: the seven program colors */
     --salt-primary: #144931;
-    --salt-secondary: #86651a;
+    --salt-secondary: #3a3e41;
     --salt-light: #c3d8ca;
     --salt-pale: #eaf3ed;
     --salt-gray: #e8e8e8;
@@ -96,13 +96,13 @@
     --salt-primary-darker: #092116;
     --salt-primary-bright: #577f6b;
     --salt-primary-rgb: 20, 73, 49;
-    --salt-secondary-dark: #6b5115;
-    --salt-secondary-darker: #4a380e;
-    --salt-secondary-light: #c9ba98;
-    --salt-secondary-tint: #e7e0d1;
-    --salt-secondary-pale: #f5f3ed;
-    --salt-secondary-paler: #faf9f6;
-    --salt-secondary-rgb: 134, 101, 26;
+    --salt-secondary-dark: #2e3234;
+    --salt-secondary-darker: #202224;
+    --salt-secondary-light: #a6a8aa;
+    --salt-secondary-tint: #d8d8d9;
+    --salt-secondary-pale: #eff0f0;
+    --salt-secondary-paler: #f7f7f7;
+    --salt-secondary-rgb: 58, 62, 65;
     --salt-surface-soft: #f5f9f6;
     --salt-gray-light: #f4f4f4;
     --salt-gray-mid: #aeaeae;
